@@ -1,0 +1,14 @@
+BEGIN:VCARD
+VERSION:3.0
+PRODID:-//Apple Inc.//macOS 12.6.7//EN
+N:Young;Dallas;;;
+FN:Dallas Young
+EMAIL;type=INTERNET;type=HOME;type=pref:dallasyoung411@gmail.com
+TEL;type=CELL;type=VOICE;type=pref:6104282429
+ADR;type=HOME;type=pref:;;;Pittsburgh;PA;;
+item1.URL;type=pref:www.dallasyoung.com
+item1.X-ABLabel:_$!<HomePage>!$_
+item2.URL:https://www.instagram.com/dallasbutfrompa/
+item2.X-ABLabel:Instagram
+BDAY:1986-04-11
+END:VCARD
