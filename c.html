@@ -1,12 +1,110 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Contact Dallas</title>
-  <link href="style.css" rel="stylesheet" />
+  <style>
+    /* Reset some base styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background: #f9f9f9;
+  color: #333;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 30px;
+  font-size: 2.5rem;
+  color: #222;
+}
+
+.contact-card {
+  background: white;
+  padding: 25px;
+  border-radius: 15px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.info h2 {
+  margin-bottom: 5px;
+  color: #007BFF;
+  font-size: 1.2rem;
+}
+
+.info p {
+  font-size: 1rem;
+}
+
+a {
+  color: #007BFF;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive adjustments */
+@media (min-width: 600px) {
+  .contact-card {
+    flex-direction: row;
+    justify-content: space-between;
+    gap: 30px;
+    text-align: left;
+  }
+
+  .info {
+    flex: 1;
+  }
+}
+  </style>
 </head>
 <body>
-<h1>HEY WHATS UP</h1>
-  <h2>Here's my info</h2>
+  <div class="container">
+    <h1>Contact Dallas</h1>
+    <div class="contact-card">
+      <div class="info">
+        <h2>Email</h2>
+        <p><a href="mailto:dallasyoung411@gmail.com">dallasyoung411@gmail.com</a></p>
+      </div>
+      <div class="info">
+        <h2>Phone</h2>
+        <p><a href="tel:+6104282429">Call 610-428-2429</a></p>
+        <br>
+        <h2>Text</h2>
+        <p><a href="sms://+6104282429">Text Message</a></p>
+      </div>
+      <div class="info">
+        <h2>Instagram</h2>
+        <p><a href="https://www.instagram.com/dallasbutfrompa/">DallasbutfromPA</a></p>
+      </div>
+      <div class="info">
+        <h2>WhatsApp</h2>
+        <p><a href="https://wa.me/qr/FZDRA63ETPO5D1">Dallas Young</a></p>
+      </div>
+      <div class="info">
+        <h2>Signal</h2>
+        <p><a href="https://signal.me/#eu/va1Fapl7KcLG7zf_9-TtQgGZvr1G2M_yG9yVou4cGjgPzf3K4URGGZGjuhms7KIr">Dallas Young</a></p>
+      </div>
+    </div>
+  </div>
 </body>
 </html>
