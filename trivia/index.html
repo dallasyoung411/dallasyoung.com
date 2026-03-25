@@ -85,10 +85,9 @@ button { width: 100%; padding: 12px; margin-top: 8px; }
   <div class="modal-content">
     <h3>Add Team</h3>
 
-    <input id="teamInput" placeholder="Team name" />
-
-    <button id="voiceBtn">🎤 Speak</button>
-
+    <input id="teamInput" placeholder="Team Name" />
+    <h5>Use Dictation on keyboard.</h5>
+    <h5>Tap 'Enter' on keyboard to add another.</h5>
     <button id="doneBtn">Done</button>
     <button id="nextBtn">Next</button>
     <button onclick="closeTeamModal()">Cancel</button>
@@ -190,7 +189,7 @@ document.getElementById("nextBtn").onclick = () => {
 
 // RESET BUTTON
 document.getElementById("resetBtn").onclick = () => {
-  const confirmReset = confirm("Are you sure you want to reset everything?");
+  const confirmReset = confirm("Reset everything!?");
 
   if (!confirmReset) return;
 
@@ -319,24 +318,6 @@ document.getElementById("toggleAllBtn").onclick = () => {
 
 function closeModal() {
   document.getElementById("modal").style.display = "none";
-}
-
-const SpeechRecognition =
-  window.SpeechRecognition || window.webkitSpeechRecognition;
-
-if (SpeechRecognition) {
-  const recognition = new SpeechRecognition();
-  recognition.lang = "en-US";
-
-  document.getElementById("voiceBtn").onclick = () => {
-    recognition.start();
-  };
-
-  recognition.onresult = e => {
-    teamInput.value = e.results[0][0].transcript;
-  };
-} else {
-  document.getElementById("voiceBtn").style.display = "none";
 }
 
 teamInput.addEventListener("keydown", e => {
