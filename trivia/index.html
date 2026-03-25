@@ -58,6 +58,11 @@ button { width: 100%; padding: 12px; margin-top: 8px; }
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.answer.focused {
+  outline: 2px solid #2196f3;
+  background-color: #e3f2fd; /* subtle blue highlight */
+}
 </style>
 </head>
 
@@ -324,6 +329,84 @@ teamInput.addEventListener("keydown", e => {
   if (e.key === "Enter") {
     addTeam(teamInput.value.trim());
     teamInput.value = "";
+  }
+});
+
+let focusIndex = 0; // Which answer is currently focused
+
+function renderAnswers() {
+  const container = document.getElementById("answers");
+  container.innerHTML = "";
+
+  const roundArray = currentTeam.rounds[currentRoundIndex];
+
+  roundArray.forEach((val, i) => {
+    const div = document.createElement("div");
+    div.className = "answer" + (val ? " correct" : "");
+    div.textContent = answerKey[currentRoundIndex][i] || `Answer ${i+1}`;
+    div.dataset.index = i;
+
+    // Apply focus
+    if (i === focusIndex) div.classList.add("focused");
+
+    div.onclick = () => {
+      currentTeam.rounds[currentRoundIndex][i] = !val;
+      save();
+      renderAnswers();
+      render();
+    };
+
+    container.appendChild(div);
+  });
+
+  // Focus Close button if focusIndex beyond last answer
+  if (focusIndex === roundArray.length) {
+    document.querySelector("#modal button[onclick='closeModal()']").classList.add("focused");
+  } else {
+    document.querySelector("#modal button[onclick='closeModal()']").classList.remove("focused");
+  }
+}
+
+// Keyboard navigation
+document.addEventListener("keydown", e => {
+  if (!currentTeam) return; // Only active in modal
+
+  const answersCount = currentTeam.rounds[currentRoundIndex].length;
+  const closeBtn = document.querySelector("#modal button[onclick='closeModal()']");
+
+  switch (e.key) {
+    case "ArrowRight": // mark correct + advance
+      if (focusIndex < answersCount) {
+        currentTeam.rounds[currentRoundIndex][focusIndex] = true;
+        save();
+      }
+      focusIndex = Math.min(focusIndex + 1, answersCount);
+      renderAnswers();
+      break;
+
+    case "ArrowLeft": // advance without marking
+      focusIndex = Math.min(focusIndex + 1, answersCount);
+      renderAnswers();
+      break;
+
+    case "ArrowUp":
+      if (focusIndex > 0) focusIndex--;
+      renderAnswers();
+      break;
+
+    case "ArrowDown":
+      if (focusIndex < answersCount) focusIndex++;
+      renderAnswers();
+      break;
+
+    case "Enter":
+      if (focusIndex === answersCount) {
+        closeModal();
+      }
+      break;
+
+    default:
+      break;
   }
 });
 
