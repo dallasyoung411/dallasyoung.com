@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Trivia Scorer</title>
+
+<style>
+body { font-family: sans-serif; margin: 0; padding: 10px; background: #f4f4f4; }
+select, input { width: 100%; padding: 10px; margin-bottom: 8px; }
+ul { list-style: none; padding: 0; }
+li { background: white; margin: 5px 0; padding: 12px; border-radius: 6px; cursor: pointer; }
+button { width: 100%; padding: 12px; margin-top: 8px; }
+
+.reset {
+  background: #d32f2f;
+  color: white;
+}
+
+.modal {
+  position: fixed; top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.5);
+  display: none; justify-content: center; align-items: center;
+}
+
+.modal-content {
+  background: white; padding: 20px;
+  width: 90%; max-height: 80%;
+  overflow-y: auto; border-radius: 8px;
+}
+
+.answer {
+  padding: 10px; margin: 5px 0;
+  border: 1px solid #ccc; border-radius: 6px;
+}
+
+.answer.correct { background: #4caf50; color: white; }
+
+.score-row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: center;
+  gap: 10px;
+}
+
+.score-place {
+  font-weight: bold;
+}
+
+.score-points {
+  text-align: right;
+  font-weight: bold;
+}
+
+.score-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+</style>
+</head>
+
+<body>
+
+<select id="roundSelect"></select>
+
+<input type="file" id="csvInput" accept=".csv"/>
+
+<ul id="teamList"></ul>
+
+<button id="addTeamBtn">Add Team</button>
+<button id="resetBtn" class="reset">RESET</button>
+
+<div class="modal" id="modal">
+  <div class="modal-content">
+    <h3 id="modalTitle"></h3>
+    <button id="toggleAllBtn">Toggle All</button>
+    <div id="answers"></div>
+    <button onclick="closeModal()">Close</button>
+  </div>
+</div>
+
+<script>
+const ROUNDS = [
+  "Round 1","Round 2","Round 3",
+  "Round 4","Round 5","Round 6","Scoreboard"
+];
+
+const ANSWERS_PER_ROUND = [7,7,7,7,7,8];
+
+let answerKey = ANSWERS_PER_ROUND.map(count =>
+  Array(count).fill("")
+);
+
+let data = JSON.parse(localStorage.getItem("triviaData")) || {
+  teams: []
+};
+
+function save() {
+  localStorage.setItem("triviaData", JSON.stringify(data));
+}
+
+// Dropdown
+const select = document.getElementById("roundSelect");
+ROUNDS.forEach(r => {
+  const opt = document.createElement("option");
+  opt.value = r;
+  opt.textContent = r;
+  select.appendChild(opt);
+});
+select.addEventListener("change", render);
+
+// CSV Upload
+document.getElementById("csvInput").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = evt => {
+    const rows = evt.target.result.trim().split("\n");
+
+    answerKey = rows.map((row, i) => {
+      const cells = row.split(",").map(c => c.trim());
+      return cells.slice(0, ANSWERS_PER_ROUND[i]);
+    });
+
+    alert("CSV loaded");
+  };
+  reader.readAsText(file);
+});
+
+// Add Team
+document.getElementById("addTeamBtn").onclick = () => {
+  const name = prompt("Team name?");
+  if (!name) return;
+
+  data.teams.push({
+    name,
+    rounds: ANSWERS_PER_ROUND.map(count =>
+      Array(count).fill(false)
+    )
+  });
+
+  save();
+  render();
+};
+
+// RESET BUTTON
+document.getElementById("resetBtn").onclick = () => {
+  const confirmReset = confirm("Are you sure you want to reset everything?");
+
+  if (!confirmReset) return;
+
+  // Clear all data
+  data = { teams: [] };
+  localStorage.removeItem("triviaData");
+
+  // Reset answer key too (optional safety)
+  answerKey = ANSWERS_PER_ROUND.map(count =>
+    Array(count).fill("")
+  );
+
+  render();
+};
+
+// Scoring
+function getScore(team) {
+  let total = 0;
+
+  team.rounds.forEach((round, i) => {
+    const points = (i === 5) ? 2 : 1;
+    total += round.filter(Boolean).length * points;
+  });
+
+  return total;
+}
+
+// Render
+function render() {
+  const round = select.value;
+  const list = document.getElementById("teamList");
+  list.innerHTML = "";
+
+  let teams = [...data.teams];
+
+  if (round === "Scoreboard") {
+    teams.sort((a,b) => getScore(b) - getScore(a));
+
+    teams.forEach((team, index) => {
+      const li = document.createElement("li");
+      li.className = "score-row";
+
+      const place = document.createElement("div");
+      place.className = "score-place";
+      place.textContent = `${index + 1}.`;
+
+      const points = document.createElement("div");
+      points.className = "score-points";
+      points.textContent = getScore(team);
+
+      const name = document.createElement("div");
+      name.className = "score-name";
+      name.textContent = team.name;
+
+      li.appendChild(place);
+      li.appendChild(points);
+      li.appendChild(name);
+
+      list.appendChild(li);
+    });
+
+  } else {
+    teams.sort((a,b) => a.name.localeCompare(b.name));
+
+    teams.forEach(team => {
+      const li = document.createElement("li");
+      li.textContent = team.name;
+      li.onclick = () => openModal(team);
+      list.appendChild(li);
+    });
+  }
+}
+
+// Modal
+let currentTeam = null;
+let currentRoundIndex = null;
+
+function openModal(team) {
+  const roundIndex = ROUNDS.indexOf(select.value);
+  if (roundIndex === 6) return;
+
+  currentTeam = team;
+  currentRoundIndex = roundIndex;
+
+  document.getElementById("modal").style.display = "flex";
+  document.getElementById("modalTitle").textContent = team.name;
+
+  renderAnswers();
+}
+
+function renderAnswers() {
+  const container = document.getElementById("answers");
+  container.innerHTML = "";
+
+  currentTeam.rounds[currentRoundIndex].forEach((val, i) => {
+    const div = document.createElement("div");
+    div.className = "answer" + (val ? " correct" : "");
+
+    div.textContent =
+      answerKey[currentRoundIndex][i] || `Answer ${i+1}`;
+
+    div.onclick = () => {
+      currentTeam.rounds[currentRoundIndex][i] = !val;
+      save();
+      renderAnswers();
+      render();
+    };
+
+    container.appendChild(div);
+  });
+}
+
+// Toggle All
+document.getElementById("toggleAllBtn").onclick = () => {
+  const round = currentTeam.rounds[currentRoundIndex];
+  const allSelected = round.every(v => v);
+
+  for (let i = 0; i < round.length; i++) {
+    round[i] = !allSelected;
+  }
+
+  save();
+  renderAnswers();
+  render();
+};
+
+function closeModal() {
+  document.getElementById("modal").style.display = "none";
+}
+
+// Init
+render();
+</script>
+
+</body>
+</html>
