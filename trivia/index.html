@@ -81,6 +81,20 @@ button { width: 100%; padding: 12px; margin-top: 8px; }
   </div>
 </div>
 
+<div class="modal" id="teamModal">
+  <div class="modal-content">
+    <h3>Add Team</h3>
+
+    <input id="teamInput" placeholder="Team name" />
+
+    <button id="voiceBtn">🎤 Speak</button>
+
+    <button id="doneBtn">Done</button>
+    <button id="nextBtn">Next</button>
+    <button onclick="closeTeamModal()">Cancel</button>
+  </div>
+</div>
+
 <script>
 const ROUNDS = [
   "Round 1","Round 2","Round 3",
@@ -131,8 +145,23 @@ document.getElementById("csvInput").addEventListener("change", e => {
 });
 
 // Add Team
+const teamModal = document.getElementById("teamModal");
+const teamInput = document.getElementById("teamInput");
+
+// Open modal
 document.getElementById("addTeamBtn").onclick = () => {
-  const name = prompt("Team name?");
+  teamModal.style.display = "flex";
+  teamInput.value = "";
+  setTimeout(() => teamInput.focus(), 100);
+};
+
+// Close modal
+function closeTeamModal() {
+  teamModal.style.display = "none";
+}
+
+// Add team helper
+function addTeam(name) {
   if (!name) return;
 
   data.teams.push({
@@ -144,6 +173,19 @@ document.getElementById("addTeamBtn").onclick = () => {
 
   save();
   render();
+}
+
+// Done
+document.getElementById("doneBtn").onclick = () => {
+  addTeam(teamInput.value.trim());
+  closeTeamModal();
+};
+
+// Next (keep adding)
+document.getElementById("nextBtn").onclick = () => {
+  addTeam(teamInput.value.trim());
+  teamInput.value = "";
+  teamInput.focus();
 };
 
 // RESET BUTTON
@@ -278,6 +320,31 @@ document.getElementById("toggleAllBtn").onclick = () => {
 function closeModal() {
   document.getElementById("modal").style.display = "none";
 }
+
+const SpeechRecognition =
+  window.SpeechRecognition || window.webkitSpeechRecognition;
+
+if (SpeechRecognition) {
+  const recognition = new SpeechRecognition();
+  recognition.lang = "en-US";
+
+  document.getElementById("voiceBtn").onclick = () => {
+    recognition.start();
+  };
+
+  recognition.onresult = e => {
+    teamInput.value = e.results[0][0].transcript;
+  };
+} else {
+  document.getElementById("voiceBtn").style.display = "none";
+}
+
+teamInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    addTeam(teamInput.value.trim());
+    teamInput.value = "";
+  }
+});
 
 // Init
 render();
