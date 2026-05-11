@@ -528,15 +528,15 @@
     <div class="modal-header">
       <div class="modal-drag"></div>
       <div class="modal-title">Add Team</div>
-      <div class="modal-subtitle">Enter the team name</div>
+      <div class="modal-subtitle">Press ENTER to submit. Click Finish when done.</div>
     </div>
     <div class="modal-body">
       <input type="text" class="add-input" id="teamNameInput" placeholder="e.g. Quiz Khalifa" maxlength="40"
         onkeydown="if(event.key==='Enter')confirmAddTeam()">
     </div>
     <div class="modal-footer">
-      <button class="btn-cancel" onclick="closeAddModal()">Cancel</button>
       <button class="btn-add-confirm" onclick="confirmAddTeam()">Add Team</button>
+      <button class="btn-cancel" onclick="closeAddModal()">Finish</button>
     </div>
   </div>
 </div>
