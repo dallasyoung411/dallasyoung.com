@@ -1,0 +1,1245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Trivia Scorer</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<style>
+  :root {
+    --bg: #0f0e17;
+    --surface: #1a1928;
+    --surface2: #252440;
+    --accent: #e8c547;
+    --accent2: #ff6b6b;
+    --green: #4ade80;
+    --text: #f4f0e8;
+    --muted: #8a879d;
+    --border: rgba(255,255,255,0.08);
+    --radius: 12px;
+    --font: 'Arial', sans-serif;
+    --mono: 'Courier New', monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font);
+    min-height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+    padding-bottom: 80px;
+  }
+
+  /* Header */
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .app-title {
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+  .round-select {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 18px;
+    padding: 10px 14px;
+    border-radius: var(--radius);
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%23e8c547' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 14px center;
+    cursor: pointer;
+  }
+  .round-select:focus { outline: none; border-color: var(--accent); }
+  .header-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .app-title { margin-bottom: 0; }
+  .csv-upload-btn {
+    background: rgba(232,197,71,0.1);
+    border: 1px solid rgba(232,197,71,0.35);
+    border-radius: 7px;
+    color: var(--accent);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.05em;
+    padding: 6px 12px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  .csv-upload-btn:hover { background: rgba(232,197,71,0.18); border-color: rgba(232,197,71,0.6); }
+  .csv-upload-btn:active { background: rgba(232,197,71,0.25); }
+  .csv-upload-btn.loaded { color: var(--green); border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.08); }
+
+  /* Round view */
+  .round-view { padding: 16px; }
+  .round-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .round-label {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: var(--mono);
+    letter-spacing: 0.1em;
+  }
+  .team-count {
+    font-size: 13px;
+    color: var(--muted);
+    font-family: var(--mono);
+  }
+
+  /* Team cards */
+  .team-list { display: flex; flex-direction: column; gap: 10px; }
+  .team-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: border-color 0.15s, background 0.15s;
+    user-select: none;
+  }
+  .team-card:active { background: var(--surface2); }
+  .team-card:hover { border-color: rgba(232, 197, 71, 0.3); }
+  .team-card.kb-focus { border-color: var(--accent); background: var(--surface2); outline: none; }
+  .team-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-family: 'Arial', sans-serif;
+    font-weight: bold;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-right: 12px;
+  }
+  .team-info { flex: 1; min-width: 0; }
+  .team-name {
+    font-size: 16px;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .team-pts {
+    font-size: 12px;
+    color: var(--muted);
+    font-family: var(--mono);
+    margin-top: 2px;
+  }
+  .team-round-score {
+    font-size: 22px;
+    font-family: var(--mono);
+    color: var(--accent);
+    font-weight: bold;
+    flex-shrink: 0;
+    margin-left: 12px;
+  }
+
+  /* Add team button */
+  .add-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 16px;
+    padding: 14px;
+    background: transparent;
+    border: 1px dashed rgba(232, 197, 71, 0.35);
+    border-radius: var(--radius);
+    color: var(--accent);
+    font-family: var(--font);
+    font-size: 15px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .add-btn:hover { background: rgba(232,197,71,0.05); border-color: rgba(232,197,71,0.6); }
+  .add-btn:active { background: rgba(232,197,71,0.1); }
+  .add-icon { font-size: 20px; line-height: 1; }
+
+  /* Scoreboard */
+  .scoreboard { padding: 16px; }
+  .sb-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 16px;
+  }
+  .export-btn {
+    background: var(--accent);
+    color: #0f0e17;
+    border: none;
+    border-radius: 8px;
+    padding: 8px 14px;
+    font-family: var(--mono);
+    font-size: 12px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    font-weight: bold;
+    transition: opacity 0.15s;
+  }
+  .export-btn:active { opacity: 0.8; }
+  .clear-btn {
+    background: transparent;
+    border: 1px solid rgba(255,107,107,0.35);
+    border-radius: 8px;
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .clear-btn:hover { background: rgba(255,107,107,0.08); }
+  .clear-btn:active { background: rgba(255,107,107,0.15); }
+  .sb-group {
+    display: flex;
+    align-items: stretch;
+    margin-bottom: 10px;
+    gap: 0;
+  }
+  .sb-place {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    flex-shrink: 0;
+    padding: 4px 0;
+  }
+  .sb-place-num {
+    font-size: 18px;
+    font-family: var(--mono);
+    font-weight: bold;
+    line-height: 1;
+  }
+  .sb-place-num.tied { color: var(--accent2); }
+  .sb-place-num.solo { color: var(--accent); }
+  .sb-tie-count {
+    font-size: 10px;
+    font-family: var(--mono);
+    color: var(--accent2);
+    margin-top: 3px;
+    opacity: 0.8;
+  }
+  .sb-cards {
+    flex: 1;
+    min-width: 0;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  .sb-cards.tied {
+    border-color: rgba(255, 107, 107, 0.3);
+  }
+  .sb-row {
+    background: var(--surface);
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .sb-cards.tied .sb-row { background: rgba(255,107,107,0.06); }
+  .sb-row + .sb-row {
+    border-top: 1px solid var(--border);
+  }
+  .sb-cards.tied .sb-row + .sb-row { border-top-color: rgba(255,107,107,0.2); }
+  .sb-name { flex: 1; font-size: 16px; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .sb-total { font-size: 24px; font-family: var(--mono); color: var(--accent); font-weight: bold; flex-shrink: 0; }
+  .sb-breakdown {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .sb-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+    font-size: 15px;
+  }
+
+  /* Modal overlay */
+  .modal-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.75);
+    z-index: 200;
+    display: flex;
+    align-items: flex-end;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: all; }
+  .modal {
+    background: var(--surface);
+    border-radius: 20px 20px 0 0;
+    width: 100%;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border-top: 1px solid var(--border);
+    transform: translateY(20px);
+    transition: transform 0.2s;
+    overflow: hidden;
+  }
+  .modal-overlay.open .modal { transform: translateY(0); }
+  .modal-header {
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .modal-drag {
+    width: 36px;
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin: 0 auto 16px;
+  }
+  .modal-title { font-size: 20px; margin-bottom: 4px; }
+  .modal-subtitle { font-size: 13px; font-family: var(--mono); color: var(--muted); }
+  .modal-body {
+    overflow-y: auto;
+    flex: 1;
+    padding: 16px 20px;
+    -webkit-overflow-scrolling: touch;
+  }
+  .answer-item {
+    display: flex;
+    align-items: center;
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: var(--surface2);
+    user-select: none;
+  }
+  .answer-item.correct {
+    background: rgba(74, 222, 128, 0.12);
+    border-color: rgba(74, 222, 128, 0.4);
+  }
+  .answer-item.kb-focus { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+  .answer-item.correct.kb-focus { border-color: var(--green); box-shadow: 0 0 0 1px var(--green); }
+  .answer-item:active { transform: scale(0.98); }
+  .answer-num {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--muted);
+    width: 24px;
+    flex-shrink: 0;
+  }
+  .answer-item.correct .answer-num { color: var(--green); }
+  .answer-text {
+    flex: 1;
+    font-size: 15px;
+  }
+  .answer-item.correct .answer-text { color: var(--green); }
+  .answer-check {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    color: transparent;
+    transition: all 0.15s;
+  }
+  .answer-item.correct .answer-check {
+    background: var(--green);
+    border-color: var(--green);
+    color: #0f0e17;
+  }
+  .modal-footer {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    flex-shrink: 0;
+    display: flex;
+    gap: 10px;
+  }
+  .btn-done {
+    flex: 1;
+    background: var(--accent);
+    color: #0f0e17;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: opacity 0.15s;
+  }
+  .btn-done:active { opacity: 0.85; }
+
+  /* Add team modal */
+  .add-input {
+    width: 100%;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 18px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  .add-input:focus { border-color: var(--accent); }
+  .add-input::placeholder { color: var(--muted); }
+  .btn-add-confirm {
+    flex: 1;
+    background: var(--accent);
+    color: #0f0e17;
+    border: none;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: var(--font);
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  .btn-cancel {
+    background: var(--surface2);
+    color: var(--muted);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 20px;
+    font-family: var(--font);
+    font-size: 16px;
+    cursor: pointer;
+  }
+  .hint-r6 {
+    background: rgba(255, 107, 107, 0.12);
+    border: 1px solid rgba(255, 107, 107, 0.3);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--accent2);
+    margin-bottom: 14px;
+  }
+  .score-tally {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--accent);
+    margin-top: 8px;
+  }
+  .empty-state {
+    text-align: center;
+    padding: 48px 20px;
+    color: var(--muted);
+  }
+  .empty-state .big { font-size: 36px; margin-bottom: 12px; }
+  .empty-state p { font-size: 15px; line-height: 1.6; }
+  .kb-hint {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 12px;
+    opacity: 0.7;
+  }
+  .kb-hint kbd {
+    background: var(--surface2);
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 4px;
+    padding: 1px 5px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text);
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-top">
+    <div class="app-title">Trivia Scorer</div>
+    <button class="csv-upload-btn" onclick="document.getElementById('csvFileInput').click()">
+      <span id="csvStatus">Upload CSV</span>
+    </button>
+    <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none"
+      onchange="handleCSV(this.files[0]); this.value=''">
+  </div>
+  <select class="round-select" id="roundSelect" onchange="switchView(this.value)">
+    <option value="0">Round 1</option>
+    <option value="1">Round 2</option>
+    <option value="2">Round 3</option>
+    <option value="3">Round 4</option>
+    <option value="4">Round 5</option>
+    <option value="5">Round 6 (2x pts)</option>
+    <option value="6">Scoreboard</option>
+  </select>
+</div>
+
+<div id="mainContent"></div>
+
+<!-- Answer sheet modal -->
+<div class="modal-overlay" id="answerModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-drag"></div>
+      <div class="modal-title" id="modalTeamName"></div>
+      <div class="modal-subtitle" id="modalSubtitle"></div>
+      <div class="score-tally" id="scoreTally"></div>
+      <div class="kb-hint" style="margin-top:8px;">
+        <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+        <span><kbd>→</kbd> correct</span>
+        <span><kbd>←</kbd> undo</span>
+        <span><kbd>↵</kbd> done</span>
+      </div>
+    </div>
+    <div class="modal-body" id="modalAnswers"></div>
+    <div class="modal-footer">
+      <button class="btn-done" onclick="closeModal()">Done</button>
+    </div>
+  </div>
+</div>
+
+<!-- Add team modal -->
+<div class="modal-overlay" id="addTeamModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-drag"></div>
+      <div class="modal-title">Add Team</div>
+      <div class="modal-subtitle">Press ENTER to submit. Click Finish when done.</div>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="add-input" id="teamNameInput" placeholder="e.g. Quiz Khalifa" maxlength="40"
+        onkeydown="if(event.key==='Enter')confirmAddTeam()">
+    </div>
+    <div class="modal-footer">
+      <button class="btn-add-confirm" onclick="confirmAddTeam()">Add Team</button>
+      <button class="btn-cancel" onclick="closeAddModal()">Finish</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const ROUNDS = 6;
+const ANSWERS_PER_ROUND = 7;
+const ROUND_NAMES = ['Round 1','Round 2','Round 3','Round 4','Round 5','Round 6'];
+
+// answerLabels[round][question] — populated from CSV upload
+let answerLabels = Array.from({length: ROUNDS}, (_, r) =>
+  Array.from({length: ANSWERS_PER_ROUND}, (_, q) => `Answer ${q+1}`)
+);
+
+// State
+let teams = []; // [{name, answers: [[bool x7] x6]}]
+let currentView = 0; // 0-5 = rounds, 6 = scoreboard
+let activeTeam = null;
+let activeRound = null;
+
+function parseCSV(text) {
+  // Split into lines, skip empty
+  const lines = text.split(/\r?\n/).filter(l => l.trim());
+  // Detect delimiter: comma or semicolon or tab
+  const delim = lines[0].includes('\t') ? '\t' : lines[0].includes(';') ? ';' : ',';
+  const rows = lines.map(l => l.split(delim).map(c => c.trim().replace(/^["']|["']$/g,'')));
+  const dataRows = rows;
+  // dataRows: up to 7 rows, each with up to 6 columns
+  const newLabels = Array.from({length: ROUNDS}, (_, r) =>
+    Array.from({length: ANSWERS_PER_ROUND}, (_, q) => {
+      const row = dataRows[q];
+      return (row && row[r] && row[r].trim()) ? row[r].trim() : `Answer ${q+1}`;
+    })
+  );
+  return newLabels;
+}
+
+function handleCSV(file) {
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      answerLabels = parseCSV(e.target.result);
+      const btn = document.querySelector('.csv-upload-btn');
+      document.getElementById('csvStatus').textContent = '✓ CSV loaded';
+      btn.classList.add('loaded');
+      render();
+    } catch(err) {
+      document.getElementById('csvStatus').textContent = '✗ Error';
+    }
+  };
+  reader.readAsText(file);
+}
+
+function initTeam(name) {
+  return {
+    name,
+    answers: Array.from({length: ROUNDS}, () => Array(ANSWERS_PER_ROUND).fill(false))
+  };
+}
+
+function getTeamRoundScore(team, round) {
+  const pts = round === 5 ? 2 : 1;
+  return team.answers[round].filter(Boolean).length * pts;
+}
+
+function getTeamTotal(team) {
+  let total = 0;
+  for (let r = 0; r < ROUNDS; r++) total += getTeamRoundScore(team, r);
+  return total;
+}
+
+// Place of a team among all teams (1-based, tied teams share same place)
+function getTeamPlace(team) {
+  const myScore = getTeamTotal(team);
+  const higher = teams.filter(t => getTeamTotal(t) > myScore).length;
+  return higher + 1;
+}
+
+// Max possible score up to and including round r (0-indexed)
+function maxScoreUpToRound(r) {
+  let max = 0;
+  for (let i = 0; i <= r; i++) max += ANSWERS_PER_ROUND * (i === 5 ? 2 : 1);
+  return max;
+}
+
+function getInitials(name) {
+  return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || '?';
+}
+
+function switchView(v) {
+  currentView = parseInt(v);
+  render();
+}
+
+function render() {
+  const el = document.getElementById('mainContent');
+  if (currentView === 6) {
+    el.innerHTML = renderScoreboard();
+    kbTeamIdx = -1;
+  } else {
+    el.innerHTML = renderRound(currentView);
+    // Auto-highlight first team if any exist
+    const cards = getTeamCards();
+    if (cards.length > 0) {
+      kbTeamIdx = 0;
+      cards[0].classList.add('kb-focus');
+    } else {
+      kbTeamIdx = -1;
+    }
+  }
+}
+
+function renderRound(r) {
+  const sorted = [...teams].sort((a,b) => a.name.localeCompare(b.name));
+  const isR6 = r === 5;
+  let html = `<div class="round-view">
+    <div class="round-header">
+      <div class="round-label">${ROUND_NAMES[r]}${isR6 ? ' · 2 pts/answer' : ''}</div>
+      <div class="team-count">${teams.length} team${teams.length!==1?'s':''}</div>
+    </div>`;
+
+  if (sorted.length === 0) {
+    html += `<div class="empty-state">
+      <p>Version 0.009728</p>
+    </div>`;
+  } else {
+    html += `<div class="team-list">`;
+    let lastLetter = '';
+    for (const team of sorted) {
+      const ti = teams.indexOf(team);
+      const total = getTeamTotal(team);
+      const place = getTeamPlace(team);
+      const maxScore = maxScoreUpToRound(r);
+      const firstLetter = team.name.trim()[0].toUpperCase();
+      const showAvatar = firstLetter !== lastLetter;
+      lastLetter = firstLetter;
+      const statLine = `${place} / ${teams.length} Place &nbsp;✦&nbsp; ${total} / ${maxScore} Points`;
+      html += `<div class="team-card" onclick="openAnswerModal(${ti},${r})">
+        <div class="team-avatar" style="${showAvatar ? '' : 'visibility:hidden'}">${firstLetter}</div>
+        <div class="team-info">
+          <div class="team-name">${esc(team.name)}</div>
+          <div class="team-pts">${statLine}</div>
+        </div>
+        <div class="team-round-score">${getTeamRoundScore(team, r)}</div>
+      </div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<button class="add-btn" onclick="openAddModal()">
+    <span class="add-icon">+</span> Add Team
+  </button>`;
+
+  if (sorted.length > 0) {
+    html += `<div class="kb-hint">
+      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↵</kbd> open team</span>
+    </div>`;
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function renderScoreboard() {
+  const sorted = [...teams].sort((a,b) => getTeamTotal(b) - getTeamTotal(a));
+  let html = `<div class="scoreboard">
+    <div class="sb-header">
+      <div class="round-label">Final Standings</div>
+      <div style="display:flex;gap:8px">
+        <button class="clear-btn" onclick="clearAllData()">Clear</button>
+        <button class="export-btn" onclick="exportPDF()">Export PDF</button>
+      </div>
+    </div>`;
+
+  if (sorted.length === 0) {
+    html += `<div class="sb-empty">
+      <p>No teams added yet.<br>Go to a round to add teams.</p>
+    </div>`;
+  } else {
+    // Group teams by score into consecutive tie-groups
+    const groups = [];
+    let i = 0, place = 1;
+    while (i < sorted.length) {
+      const score = getTeamTotal(sorted[i]);
+      const group = [];
+      while (i < sorted.length && getTeamTotal(sorted[i]) === score) {
+        group.push(sorted[i]);
+        i++;
+      }
+      groups.push({ place, score, teams: group });
+      place += group.length;
+    }
+
+    for (const g of groups) {
+      const tied = g.teams.length > 1;
+      const cardsClass = tied ? 'sb-cards tied' : 'sb-cards';
+      const numClass = tied ? 'sb-place-num tied' : 'sb-place-num solo';
+      html += `<div class="sb-group">
+        <div class="sb-place">
+          <div class="${numClass}">${g.place}.</div>
+          ${tied ? `<div class="sb-tie-count">${g.teams.length} tied</div>` : ''}
+        </div>
+        <div class="${cardsClass}">`;
+      for (const team of g.teams) {
+        const breakdown = ROUND_NAMES.map((n,r) => `R${r+1}:${getTeamRoundScore(team,r)}`).join(' ');
+        html += `<div class="sb-row">
+          <div style="flex:1;min-width:0">
+            <div class="sb-name">${esc(team.name)}</div>
+            <div class="sb-breakdown">${breakdown}</div>
+          </div>
+          <div class="sb-total">${g.score}</div>
+        </div>`;
+      }
+      html += `</div></div>`;
+    }
+  }
+
+  html += `</div>`;
+  return html;
+}
+
+function openAnswerModal(teamIdx, round) {
+  activeTeam = teamIdx;
+  activeRound = round;
+  const team = teams[teamIdx];
+
+  document.getElementById('modalTeamName').textContent = team.name;
+  document.getElementById('modalSubtitle').textContent = `${ROUND_NAMES[round]} · Tap to mark correct`;
+
+  kbAnswerIdx = 0;
+  renderAnswerItems();
+  document.getElementById('answerModal').classList.add('open');
+}
+
+function renderAnswerItems() {
+  const team = teams[activeTeam];
+  const isR6 = activeRound === 5;
+  const total = getTeamTotal(team);
+  const place = getTeamPlace(team);
+  const maxScore = maxScoreUpToRound(activeRound);
+
+  document.getElementById('scoreTally').innerHTML =
+    `${place} / ${teams.length} Place &nbsp;✦&nbsp; ${total} / ${maxScore} Points`;
+
+  let html = '';
+  if (isR6) {
+    html += `<div class="hint-r6">★ Double points round — each correct answer = 2 pts</div>`;
+  }
+  for (let i = 0; i < ANSWERS_PER_ROUND; i++) {
+    const isCorrect = team.answers[activeRound][i];
+    const label = answerLabels[activeRound][i];
+    html += `<div class="answer-item${isCorrect?' correct':''}" onclick="toggleAnswer(${i})">
+      <div class="answer-num">${String(i+1).padStart(2,'0')}</div>
+      <div class="answer-text">${esc(label)}</div>
+      <div class="answer-check">${isCorrect?'✓':''}</div>
+    </div>`;
+  }
+  document.getElementById('modalAnswers').innerHTML = html;
+  // Restore keyboard focus highlight after DOM re-render
+  if (kbAnswerIdx >= 0) {
+    const items = getAnswerItems();
+    if (items[kbAnswerIdx]) items[kbAnswerIdx].classList.add('kb-focus');
+  }
+}
+
+function toggleAnswer(idx) {
+  teams[activeTeam].answers[activeRound][idx] = !teams[activeTeam].answers[activeRound][idx];
+  renderAnswerItems();
+}
+
+function closeModal() {
+  document.getElementById('answerModal').classList.remove('open');
+  render();
+  activeTeam = null;
+  activeRound = null;
+}
+
+function openAddModal() {
+  document.getElementById('teamNameInput').value = '';
+  document.getElementById('addTeamModal').classList.add('open');
+  setTimeout(() => document.getElementById('teamNameInput').focus(), 300);
+}
+
+function closeAddModal() {
+  document.getElementById('addTeamModal').classList.remove('open');
+}
+
+function confirmAddTeam() {
+  const input = document.getElementById('teamNameInput');
+  const name = input.value.trim();
+  if (!name) return;
+  if (teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+    input.style.borderColor = '#ff6b6b';
+    setTimeout(() => input.style.borderColor = '', 1000);
+    return;
+  }
+  teams.push(initTeam(name));
+  render();
+  // Stay open — clear and re-focus for next team
+  input.value = '';
+  input.focus();
+}
+
+function esc(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+  const sorted = [...teams].sort((a,b) => getTeamTotal(b) - getTeamTotal(a));
+  const W = 210, margin = 18;
+  let y = 20;
+
+  // Header
+  doc.setFillColor(15,14,23);
+  doc.rect(0,0,W,40,'F');
+  doc.setTextColor(232,197,71);
+  doc.setFontSize(22);
+  doc.setFont('helvetica','bold');
+  doc.text('TRIVIA SCORER', margin, 18);
+  doc.setFontSize(10);
+  doc.setFont('helvetica','normal');
+  doc.setTextColor(138,135,157);
+  doc.text('Score Report · ' + new Date().toLocaleDateString('en-GB',{day:'numeric',month:'long',year:'numeric'}), margin, 28);
+  doc.setTextColor(232,197,71);
+  doc.text(`${teams.length} teams · ${ROUNDS} rounds`, margin, 36);
+  y = 52;
+
+  // Scoreboard section
+  doc.setFontSize(14);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(30,30,40);
+  doc.text('Final Standings', margin, y);
+  y += 8;
+
+  // Table header
+  doc.setFillColor(240,240,245);
+  doc.rect(margin, y, W-margin*2, 8, 'F');
+  doc.setFontSize(9);
+  doc.setFont('helvetica','bold');
+  doc.setTextColor(80,80,100);
+  doc.text('#', margin+2, y+5.5);
+  doc.text('Team', margin+12, y+5.5);
+  doc.text('R1', margin+78, y+5.5);
+  doc.text('R2', margin+90, y+5.5);
+  doc.text('R3', margin+102, y+5.5);
+  doc.text('R4', margin+114, y+5.5);
+  doc.text('R5', margin+126, y+5.5);
+  doc.text('R6', margin+138, y+5.5);
+  doc.text('Total', margin+152, y+5.5);
+  y += 10;
+
+  for (let i = 0; i < sorted.length; i++) {
+    const team = sorted[i];
+    const total = getTeamTotal(team);
+    if (i % 2 === 0) {
+      doc.setFillColor(250,250,252);
+      doc.rect(margin, y-4, W-margin*2, 9, 'F');
+    }
+    doc.setFontSize(9);
+    doc.setFont('helvetica','normal');
+    doc.setTextColor(50,50,60);
+    doc.text(`${i+1}`, margin+2, y+1.5);
+    doc.text(team.name.slice(0,22), margin+12, y+1.5);
+    for (let r = 0; r < ROUNDS; r++) {
+      const s = getTeamRoundScore(team, r);
+      const x = margin+78 + r*12;
+      if (s > 0) { doc.setTextColor(15,120,80); doc.setFont('helvetica','bold'); }
+      else { doc.setTextColor(150,150,160); doc.setFont('helvetica','normal'); }
+      doc.text(`${s}`, x, y+1.5);
+    }
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(15,14,23);
+    doc.text(`${total}`, margin+152, y+1.5);
+    y += 9;
+
+    if (y > 270) { doc.addPage(); y = 20; }
+  }
+
+  y += 8;
+
+  // ── Round Answer Summary ──────────────────────────────────────────
+  for (let r = 0; r < ROUNDS; r++) {
+    if (y > 240) { doc.addPage(); y = 20; }
+
+    // Section header
+    doc.setFillColor(232,197,71);
+    doc.rect(margin, y, W-margin*2, 9, 'F');
+    doc.setFontSize(10);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(15,14,23);
+    const ptsLabel = r === 5 ? '2 pts/answer' : '1 pt/answer';
+    doc.text(`${ROUND_NAMES[r]}  ·  ${ptsLabel}`, margin+3, y+6.5);
+    y += 12;
+
+    // Column headers
+    doc.setFontSize(8);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(80,80,100);
+    doc.text('Answer', margin+2, y);
+    doc.text('Teams correct', W-margin-2, y, {align:'right'});
+    y += 5;
+    doc.setDrawColor(200,200,210);
+    doc.line(margin, y, W-margin, y);
+    y += 5;
+
+    // One row per answer
+    for (let a = 0; a < ANSWERS_PER_ROUND; a++) {
+      const label = answerLabels[r][a];
+      const count = teams.filter(t => t.answers[r][a]).length;
+      const pct = teams.length > 0 ? Math.round(count / teams.length * 100) : 0;
+
+      // Alternating row shading
+      if (a % 2 === 0) {
+        doc.setFillColor(248,248,250);
+        doc.rect(margin, y-3.5, W-margin*2, 7.5, 'F');
+      }
+
+      doc.setFontSize(8.5);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(40,40,55);
+      doc.text(`${a+1}. ${label.slice(0,62)}`, margin+2, y);
+
+      // Count badge
+      const countStr = `${count} / ${teams.length}`;
+      const pctStr = teams.length > 0 ? `  (${pct}%)` : '';
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(count === 0 ? 160 : 15, count === 0 ? 160 : 120, count === 0 ? 160 : 50);
+      doc.text(countStr + pctStr, W-margin-2, y, {align:'right'});
+
+      y += 8;
+      if (y > 272) { doc.addPage(); y = 20; }
+    }
+    y += 6;
+  }
+
+  y += 4;
+
+  // Per-round detail pages
+  for (let r = 0; r < ROUNDS; r++) {
+    if (y > 240) { doc.addPage(); y = 20; }
+
+    doc.setFillColor(232,197,71);
+    doc.rect(margin, y, W-margin*2, 10, 'F');
+    doc.setFontSize(11);
+    doc.setFont('helvetica','bold');
+    doc.setTextColor(15,14,23);
+    const pts = r === 5 ? '2 pts/answer' : '1 pt/answer';
+    doc.text(`${ROUND_NAMES[r]}  ·  ${pts}`, margin+3, y+7);
+    y += 14;
+
+    const roundTeams = [...teams].sort((a,b) => a.name.localeCompare(b.name));
+    for (const team of roundTeams) {
+      const score = getTeamRoundScore(team, r);
+      doc.setFontSize(9);
+      doc.setFont('helvetica','bold');
+      doc.setTextColor(50,50,60);
+      doc.text(team.name.slice(0,28), margin+2, y);
+      doc.setFont('helvetica','normal');
+      doc.setTextColor(r===5?160:60, r===5?80:140, 30);
+      doc.text(`${score}pt${score!==1?'s':''}`, W-margin-2, y, {align:'right'});
+      y += 5;
+
+      // Answer rows: label + tick
+      for (let a = 0; a < ANSWERS_PER_ROUND; a++) {
+        const isCorrect = team.answers[r][a];
+        const label = answerLabels[r][a];
+        if (isCorrect) {
+          doc.setFillColor(74,222,128);
+          doc.circle(margin+5, y-1.5, 2, 'F');
+          doc.setTextColor(255,255,255);
+          doc.setFontSize(6);
+          doc.setFont('helvetica','bold');
+          doc.text('✓', margin+3.8, y-0.7);
+        } else {
+          doc.setDrawColor(200,200,210);
+          doc.setFillColor(245,245,248);
+          doc.circle(margin+5, y-1.5, 2, 'FD');
+        }
+        doc.setFontSize(8);
+        doc.setFont('helvetica', isCorrect ? 'bold' : 'normal');
+        doc.setTextColor(isCorrect ? 30 : 120, isCorrect ? 120 : 120, isCorrect ? 50 : 130);
+        doc.text(`${a+1}. ${label.slice(0,55)}`, margin+10, y-0.5);
+        y += 6;
+        if (y > 272) { doc.addPage(); y = 20; }
+      }
+      y += 4;
+      if (y > 272) { doc.addPage(); y = 20; }
+    }
+    y += 6;
+  }
+
+  doc.save('trivia-scores.pdf');
+}
+
+// Close modals on overlay click
+document.getElementById('answerModal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+document.getElementById('addTeamModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddModal();
+});
+
+// Keyboard navigation state
+let kbTeamIdx = -1;   // highlighted team index in the sorted round list
+let kbAnswerIdx = -1; // highlighted answer index in the answer modal
+
+function getTeamCards() {
+  return Array.from(document.querySelectorAll('.team-card'));
+}
+
+function setTeamFocus(idx) {
+  const cards = getTeamCards();
+  if (!cards.length) return;
+  kbTeamIdx = Math.max(0, Math.min(idx, cards.length - 1));
+  cards.forEach((c, i) => c.classList.toggle('kb-focus', i === kbTeamIdx));
+  cards[kbTeamIdx].scrollIntoView({ block: 'nearest' });
+}
+
+function clearTeamFocus() {
+  getTeamCards().forEach(c => c.classList.remove('kb-focus'));
+  kbTeamIdx = -1;
+}
+
+function getAnswerItems() {
+  return Array.from(document.querySelectorAll('#modalAnswers .answer-item'));
+}
+
+function setAnswerFocus(idx) {
+  const items = getAnswerItems();
+  if (!items.length) return;
+  kbAnswerIdx = Math.max(0, Math.min(idx, items.length - 1));
+  items.forEach((el, i) => el.classList.toggle('kb-focus', i === kbAnswerIdx));
+  items[kbAnswerIdx].scrollIntoView({ block: 'nearest' });
+}
+
+function isAnswerModalOpen() {
+  return document.getElementById('answerModal').classList.contains('open');
+}
+
+function isAddModalOpen() {
+  return document.getElementById('addTeamModal').classList.contains('open');
+}
+
+document.addEventListener('keydown', function(e) {
+  // Never intercept while typing in add-team input
+  if (document.activeElement === document.getElementById('teamNameInput')) return;
+
+  // --- Answer modal open ---
+  if (isAnswerModalOpen()) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setAnswerFocus(kbAnswerIdx < 0 ? 0 : kbAnswerIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setAnswerFocus(kbAnswerIdx <= 0 ? 0 : kbAnswerIdx - 1);
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      if (kbAnswerIdx < 0) { setAnswerFocus(0); return; }
+      // Mark current correct if not already
+      if (!teams[activeTeam].answers[activeRound][kbAnswerIdx]) {
+        teams[activeTeam].answers[activeRound][kbAnswerIdx] = true;
+        renderAnswerItems();
+      }
+      // Advance to next
+      const items = getAnswerItems();
+      if (kbAnswerIdx < items.length - 1) setAnswerFocus(kbAnswerIdx + 1);
+      else setAnswerFocus(kbAnswerIdx); // re-apply highlight after re-render
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      if (kbAnswerIdx < 0) { setAnswerFocus(0); return; }
+      // Unmark if currently correct
+      if (teams[activeTeam].answers[activeRound][kbAnswerIdx]) {
+        teams[activeTeam].answers[activeRound][kbAnswerIdx] = false;
+        renderAnswerItems();
+        setAnswerFocus(kbAnswerIdx);
+      }
+    } else if (e.key === 'Escape' || e.key === 'Enter') {
+      e.preventDefault();
+      closeModal();
+    }
+    return;
+  }
+
+  // --- Round list view (no modal open) ---
+  if (currentView < 6 && !isAddModalOpen()) {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setTeamFocus(kbTeamIdx < 0 ? 0 : kbTeamIdx + 1);
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setTeamFocus(kbTeamIdx <= 0 ? 0 : kbTeamIdx - 1);
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      if (kbTeamIdx >= 0) {
+        const cards = getTeamCards();
+        if (cards[kbTeamIdx]) cards[kbTeamIdx].click();
+      }
+    } else if (e.key === 'Escape') {
+      clearTeamFocus();
+    }
+  }
+});
+
+// Reset kb state when modals open/close
+const origOpenAnswerModal = openAnswerModal;
+openAnswerModal = function(teamIdx, round) {
+  origOpenAnswerModal(teamIdx, round);
+};
+
+const origCloseModal = closeModal;
+closeModal = function() {
+  kbAnswerIdx = -1;
+  origCloseModal();
+};
+
+const origOpenAddModal = openAddModal;
+openAddModal = function() {
+  clearTeamFocus();
+  origOpenAddModal();
+};
+
+// Reset team focus on view switch
+const origSwitchView = switchView;
+switchView = function(v) {
+  clearTeamFocus();
+  origSwitchView(v);
+};
+
+// ── Persistence ───────────────────────────────────────────────────
+const STORAGE_KEY = 'trivia_scorer_v1';
+
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      teams,
+      answerLabels,
+      currentView
+    }));
+  } catch(e) { /* storage unavailable */ }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return;
+    const data = JSON.parse(raw);
+    if (Array.isArray(data.teams)) teams = data.teams;
+    if (Array.isArray(data.answerLabels)) {
+      answerLabels = data.answerLabels;
+      if (answerLabels.some(r => r.some(a => !a.startsWith('Answer ')))) {
+        document.getElementById('csvStatus').textContent = '✓ CSV restored';
+        document.querySelector('.csv-upload-btn').classList.add('loaded');
+      }
+    }
+    if (typeof data.currentView === 'number') {
+      currentView = data.currentView;
+      document.getElementById('roundSelect').value = currentView;
+    }
+  } catch(e) { /* corrupt data, start fresh */ }
+}
+
+// Patch all state-mutating functions to auto-save
+const _origRender = render;
+render = function() { _origRender(); saveState(); };
+
+const _origHandleCSV = handleCSV;
+handleCSV = function(file) { _origHandleCSV(file); };
+// CSV save is triggered inside handleCSV's async callback via render()
+
+function clearAllData() {
+  if (!confirm('Clear all teams and scores? This cannot be undone.')) return;
+  teams = [];
+  answerLabels = Array.from({length: ROUNDS}, (_, r) =>
+    Array.from({length: ANSWERS_PER_ROUND}, (_, q) => `Answer ${q+1}`)
+  );
+  currentView = 0;
+  document.getElementById('roundSelect').value = 0;
+  document.getElementById('csvStatus').textContent = 'Upload CSV';
+  document.querySelector('.csv-upload-btn').classList.remove('loaded');
+  try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  render();
+}
+
+// Initial load
+loadState();
+render();
+</script>
+</body>
+</html>
