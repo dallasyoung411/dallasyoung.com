@@ -411,6 +411,50 @@
   .btn-done:active { opacity: 0.85; }
   .btn-done.kb-focus { outline: 3px solid #fff; outline-offset: 2px; opacity: 1; }
 
+  /* Edit teams list */
+  .edit-team-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 4px;
+    border-bottom: 1px solid var(--border);
+  }
+  .edit-team-row:last-child { border-bottom: none; }
+  .edit-team-name {
+    flex: 1;
+    font-size: 16px;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .edit-team-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 15px;
+    padding: 6px 10px;
+    border-radius: 8px;
+    outline: none;
+    min-width: 0;
+  }
+  .icon-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    border-radius: 6px;
+    font-size: 16px;
+    line-height: 1;
+    flex-shrink: 0;
+    transition: background 0.15s;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.07); }
+  .icon-btn.delete { color: var(--accent2); }
+  .icon-btn.edit { color: var(--muted); }
+
   /* Add team modal */
   .add-input {
     width: 100%;
@@ -497,11 +541,14 @@
 <div class="header">
   <div class="header-top">
     <div class="app-title">Trivia Scorer</div>
-    <button class="csv-upload-btn" onclick="document.getElementById('csvFileInput').click()">
-      <span id="csvStatus">Upload CSV</span>
-    </button>
-    <input type="file" id="csvFileInput" accept=".csv,text/csv" style="display:none"
-      onchange="handleCSV(this.files[0]); this.value=''">
+    <div style="display:flex;gap:8px;align-items:center;">
+      <button class="csv-upload-btn" onclick="openEditTeamsModal()">Edit Teams</button>
+      <button class="csv-upload-btn" onclick="document.getElementById('csvFileInput').click()">
+        <span id="csvStatus">Upload TSV</span>
+      </button>
+      <input type="file" id="csvFileInput" accept=".tsv,.txt,text/tab-separated-values" style="display:none"
+        onchange="handleCSV(this.files[0]); this.value=''">
+    </div>
   </div>
   <select class="round-select" id="roundSelect" onchange="switchView(this.value)">
     <option value="0">Round 1</option>
@@ -560,6 +607,21 @@
   </div>
 </div>
 
+<!-- Edit teams modal -->
+<div class="modal-overlay" id="editTeamsModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-drag"></div>
+      <div class="modal-title">Edit Teams</div>
+      <div class="modal-subtitle" id="editTeamsSubtitle"></div>
+    </div>
+    <div class="modal-body" id="editTeamsList"></div>
+    <div class="modal-footer">
+      <button class="btn-done" onclick="closeEditTeamsModal()">Done</button>
+    </div>
+  </div>
+</div>
+
 <script>
 const ROUNDS = 6;
 const ANSWERS_PER_ROUND = 7;
@@ -583,9 +645,7 @@ let navigatedSet = new Set();
 function parseCSV(text) {
   // Split into lines, skip empty
   const lines = text.split(/\r?\n/).filter(l => l.trim());
-  // Detect delimiter: comma or semicolon or tab
-  const delim = lines[0].includes('\t') ? '\t' : lines[0].includes(';') ? ';' : ',';
-  const rows = lines.map(l => l.split(delim).map(c => c.trim().replace(/^["']|["']$/g,'')));
+  const rows = lines.map(l => l.split('\t').map(c => c.trim().replace(/^["']|["']$/g,'')));
   const dataRows = rows;
   // dataRows: up to 7 rows, each with up to 6 columns
   const newLabels = Array.from({length: ROUNDS}, (_, r) => {
@@ -611,7 +671,7 @@ function handleCSV(file) {
     try {
       answerLabels = parseCSV(e.target.result);
       const btn = document.querySelector('.csv-upload-btn');
-      document.getElementById('csvStatus').textContent = '✓ CSV loaded';
+      document.getElementById('csvStatus').textContent = '✓ TSV loaded';
       btn.classList.add('loaded');
       render();
     } catch(err) {
@@ -714,7 +774,7 @@ function renderRound(r) {
 
   if (sorted.length === 0) {
     html += `<div class="empty-state">
-      <p>Version 0.009730</p>
+      <p>Version 0.009728</p>
     </div>`;
   } else {
     html += `<div class="team-list">`;
@@ -893,6 +953,88 @@ function openAddModal() {
 
 function closeAddModal() {
   document.getElementById('addTeamModal').classList.remove('open');
+}
+
+function openEditTeamsModal() {
+  renderEditTeamsList();
+  document.getElementById('editTeamsModal').classList.add('open');
+}
+
+function closeEditTeamsModal() {
+  document.getElementById('editTeamsModal').classList.remove('open');
+  render();
+}
+
+function renderEditTeamsList() {
+  const sorted = [...teams].sort((a, b) => a.name.localeCompare(b.name));
+  document.getElementById('editTeamsSubtitle').textContent =
+    `${teams.length} team${teams.length !== 1 ? 's' : ''}`;
+
+  if (sorted.length === 0) {
+    document.getElementById('editTeamsList').innerHTML =
+      `<div style="text-align:center;padding:32px;color:var(--muted);font-size:15px;">No teams added yet.</div>`;
+    return;
+  }
+
+  let html = '';
+  for (const team of sorted) {
+    const ti = teams.indexOf(team);
+    html += `<div class="edit-team-row" id="edit-row-${ti}">
+      <div class="edit-team-name" id="edit-name-${ti}">${esc(team.name)}</div>
+      <button class="icon-btn edit" title="Rename" onclick="startEditTeam(${ti})">✏️</button>
+      <button class="icon-btn delete" title="Delete" onclick="deleteTeam(${ti})">✕</button>
+    </div>`;
+  }
+  document.getElementById('editTeamsList').innerHTML = html;
+}
+
+function startEditTeam(ti) {
+  const row = document.getElementById(`edit-row-${ti}`);
+  if (!row) return;
+  const currentName = teams[ti].name;
+  row.innerHTML = `
+    <input class="edit-team-input" id="edit-input-${ti}" value="${esc(currentName)}" maxlength="40"
+      onkeydown="if(event.key==='Enter')confirmEditTeam(${ti}); if(event.key==='Escape')cancelEditTeam(${ti}, '${esc(currentName).replace(/'/g,"\\'")}')" />
+    <button class="icon-btn edit" title="Save" onclick="confirmEditTeam(${ti})">✓</button>
+    <button class="icon-btn delete" title="Cancel" onclick="cancelEditTeam(${ti}, '${esc(currentName).replace(/'/g,"\\'")}')" style="color:var(--muted)">✕</button>
+  `;
+  const input = document.getElementById(`edit-input-${ti}`);
+  if (input) { input.focus(); input.select(); }
+}
+
+function confirmEditTeam(ti) {
+  const input = document.getElementById(`edit-input-${ti}`);
+  if (!input) return;
+  const newName = input.value.trim();
+  if (!newName) return;
+  if (teams.some((t, i) => i !== ti && t.name.toLowerCase() === newName.toLowerCase())) {
+    input.style.borderColor = '#ff6b6b';
+    setTimeout(() => input.style.borderColor = 'var(--accent)', 1000);
+    return;
+  }
+  teams[ti].name = newName;
+  saveState();
+  renderEditTeamsList();
+}
+
+function cancelEditTeam(ti) {
+  renderEditTeamsList();
+}
+
+function deleteTeam(ti) {
+  if (!confirm(`Delete "${teams[ti].name}"? This will remove all their scores.`)) return;
+  // Clean up navigatedSet entries for this team and shift higher indices
+  const newNavigated = new Set();
+  for (const key of navigatedSet) {
+    const [kidx, round] = key.split(':').map(Number);
+    if (kidx === ti) continue; // drop deleted team
+    if (kidx > ti) newNavigated.add(`${kidx - 1}:${round}`); // shift down
+    else newNavigated.add(key);
+  }
+  navigatedSet = newNavigated;
+  teams.splice(ti, 1);
+  saveState();
+  renderEditTeamsList();
 }
 
 function confirmAddTeam() {
@@ -1117,6 +1259,9 @@ document.getElementById('answerModal').addEventListener('click', function(e) {
 document.getElementById('addTeamModal').addEventListener('click', function(e) {
   if (e.target === this) closeAddModal();
 });
+document.getElementById('editTeamsModal').addEventListener('click', function(e) {
+  if (e.target === this) closeEditTeamsModal();
+});
 
 // Keyboard navigation state
 let kbTeamIdx = -1;   // highlighted team index in the sorted round list
@@ -1306,7 +1451,7 @@ function loadState() {
     if (Array.isArray(data.answerLabels)) {
       answerLabels = data.answerLabels;
       if (answerLabels.some(r => r.some(a => !a.startsWith('Answer ')))) {
-        document.getElementById('csvStatus').textContent = '✓ CSV restored';
+        document.getElementById('csvStatus').textContent = '✓ TSV restored';
         document.querySelector('.csv-upload-btn').classList.add('loaded');
       }
     }
@@ -1335,7 +1480,7 @@ function clearAllData() {
   );
   currentView = 0;
   document.getElementById('roundSelect').value = 0;
-  document.getElementById('csvStatus').textContent = 'Upload CSV';
+  document.getElementById('csvStatus').textContent = 'Upload TSV';
   document.querySelector('.csv-upload-btn').classList.remove('loaded');
   try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
   render();
