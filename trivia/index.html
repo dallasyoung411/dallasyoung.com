@@ -26,7 +26,7 @@
     color: var(--text);
     font-family: var(--font);
     min-height: 100vh;
-    max-width: 480px;
+    max-width: 860px;
     margin: 0 auto;
     padding-bottom: 80px;
   }
@@ -64,6 +64,46 @@
     cursor: pointer;
   }
   .round-select:focus { outline: none; border-color: var(--accent); }
+  .round-tabs { display: flex; gap: 6px; }
+  .round-tab {
+    flex: 1;
+    padding: 9px 0;
+    border-radius: 8px;
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+  }
+  .round-tab:hover { border-color: rgba(232,197,71,0.4); color: var(--text); }
+  .round-tab.active {
+    background: var(--accent);
+    color: #0f0e17;
+    border-color: var(--accent);
+    font-weight: bold;
+  }
+  .type-ahead {
+    font-size: 12px;
+    font-family: var(--mono);
+    color: var(--accent);
+    background: rgba(232,197,71,0.12);
+    border: 1px solid rgba(232,197,71,0.35);
+    border-radius: 5px;
+    padding: 2px 7px;
+    margin-left: 8px;
+  }
+  .team-list-single { display: flex; flex-direction: column; gap: 8px; }
+  .section-label {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    letter-spacing: 0.1em;
+    margin: 14px 0 8px;
+    opacity: 0.75;
+  }
   .header-top {
     display: flex;
     align-items: center;
@@ -87,6 +127,51 @@
   .csv-upload-btn:hover { background: rgba(232,197,71,0.18); border-color: rgba(232,197,71,0.6); }
   .csv-upload-btn:active { background: rgba(232,197,71,0.25); }
   .csv-upload-btn.loaded { color: var(--green); border-color: rgba(74,222,128,0.4); background: rgba(74,222,128,0.08); }
+  .menu-wrap { position: relative; }
+  .menu-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    border-radius: 7px;
+    color: var(--text);
+    font-size: 16px;
+    line-height: 1;
+    padding: 7px 11px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .menu-btn:hover { border-color: rgba(232,197,71,0.5); }
+  .menu-dropdown {
+    position: absolute;
+    top: calc(100% + 6px);
+    right: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 6px;
+    min-width: 160px;
+    display: none;
+    flex-direction: column;
+    gap: 2px;
+    z-index: 300;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  }
+  .menu-dropdown.open { display: flex; }
+  .menu-item {
+    background: none;
+    border: none;
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    text-align: left;
+    padding: 10px 12px;
+    border-radius: 7px;
+    cursor: pointer;
+    transition: background 0.12s;
+    white-space: nowrap;
+  }
+  .menu-item:hover { background: var(--surface2); }
+  .menu-item.danger { color: var(--accent2); }
+  .menu-item.danger:hover { background: rgba(255,107,107,0.1); }
 
   /* Round view */
   .round-view { padding: 16px; }
@@ -107,60 +192,84 @@
     color: var(--muted);
     font-family: var(--mono);
   }
+  .round-avg {
+    color: var(--accent);
+    margin-right: 10px;
+  }
+  .round-avg::after {
+    content: '·';
+    color: var(--muted);
+    margin-left: 10px;
+  }
 
   /* Team cards */
-  .team-list { display: flex; flex-direction: column; gap: 10px; }
+  .team-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    gap: 8px;
+    align-items: stretch;
+  }
+  .team-divider { grid-column: 1 / -1; height: 1px; background: rgba(255,255,255,0.08); margin: 4px 0; }
   .team-card {
     background: var(--surface);
     border: 1px solid var(--border);
     border-radius: var(--radius);
     display: flex;
     align-items: center;
-    padding: 14px 16px;
+    padding: 10px 12px;
     cursor: pointer;
     transition: border-color 0.15s, background 0.15s;
     user-select: none;
+    min-width: 0;
   }
   .team-card:active { background: var(--surface2); }
   .team-card:hover { border-color: rgba(232, 197, 71, 0.3); }
-  .team-card.kb-focus { border-color: var(--accent); background: var(--surface2); outline: none; }
+  .team-card.kb-focus {
+    border-color: var(--accent);
+    background: var(--surface2);
+    outline: 3px solid var(--accent);
+    outline-offset: -1px;
+  }
   .team-avatar {
-    width: 38px;
-    height: 38px;
+    width: 30px;
+    height: 30px;
     border-radius: 50%;
     background: var(--surface2);
     border: 1px solid var(--border);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 22px;
+    font-size: 17px;
     font-family: 'Arial', sans-serif;
     font-weight: bold;
     color: var(--accent);
     flex-shrink: 0;
-    margin-right: 12px;
+    margin-right: 9px;
   }
   .team-info { flex: 1; min-width: 0; }
   .team-name {
-    font-size: 16px;
+    font-size: 14px;
     color: var(--text);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   .team-pts {
-    font-size: 12px;
+    font-size: 10px;
     color: var(--muted);
     font-family: var(--mono);
     margin-top: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
   .team-round-score {
-    font-size: 22px;
+    font-size: 18px;
     font-family: var(--mono);
     color: var(--accent);
     font-weight: bold;
     flex-shrink: 0;
-    margin-left: 12px;
+    margin-left: 8px;
   }
 
   /* Add team button */
@@ -316,6 +425,7 @@
     overflow: hidden;
   }
   .modal-overlay.open .modal { transform: translateY(0); }
+  .modal.modal-tall { height: 92vh; }
   .modal-header {
     padding: 20px 20px 16px;
     border-bottom: 1px solid var(--border);
@@ -329,6 +439,27 @@
     margin: 0 auto 16px;
   }
   .modal-title { font-size: 20px; margin-bottom: 4px; }
+  .modal-title-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .modal-title-row .modal-title { margin-bottom: 0; }
+  .modal-close-btn {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 14px;
+    padding: 7px 16px;
+    border-radius: 8px;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .modal-close-btn:hover { border-color: rgba(232,197,71,0.5); }
+  .modal-close-btn:active { background: var(--surface); }
   .modal-subtitle { font-size: 13px; font-family: var(--mono); color: var(--muted); }
   .modal-body {
     overflow-y: auto;
@@ -371,9 +502,10 @@
   }
   .answer-item.correct .answer-text { color: var(--green); }
   .answer-check {
-    width: 22px;
+    min-width: 22px;
     height: 22px;
-    border-radius: 50%;
+    padding: 0 3px;
+    border-radius: 11px;
     border: 1.5px solid var(--border);
     flex-shrink: 0;
     display: flex;
@@ -454,6 +586,139 @@
   .icon-btn:hover { background: rgba(255,255,255,0.07); }
   .icon-btn.delete { color: var(--accent2); }
   .icon-btn.edit { color: var(--muted); }
+  .sheet-status {
+    font-size: 12px;
+    font-family: var(--mono);
+    margin-top: 8px;
+    color: var(--muted);
+    line-height: 1.5;
+  }
+  .sheet-status:empty { display: none; }
+  .sheet-status.ok { color: var(--green); }
+  .sheet-status.err { color: var(--accent2); }
+  .sheet-note {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    opacity: 0.7;
+    margin-top: 10px;
+    line-height: 1.6;
+  }
+  .sheet-divider {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin: 18px 0 12px;
+    color: var(--muted);
+    font-size: 11px;
+    font-family: var(--mono);
+  }
+  .sheet-divider::before, .sheet-divider::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+  .answer-preview {
+    margin-top: 16px;
+    border-top: 1px solid var(--border);
+    padding-top: 14px;
+  }
+  .answer-preview:empty { display: none; }
+  .ap-round-title {
+    font-size: 13px;
+    font-family: var(--mono);
+    color: var(--accent);
+    letter-spacing: 0.05em;
+    margin: 14px 0 8px;
+  }
+  .ap-round-title:first-child { margin-top: 0; }
+  .ap-item {
+    display: flex;
+    gap: 8px;
+    font-size: 13px;
+    padding: 4px 0;
+    line-height: 1.4;
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+  }
+  .ap-num {
+    font-family: var(--mono);
+    color: var(--muted);
+    flex-shrink: 0;
+    min-width: 18px;
+  }
+  .ap-item.bonus .ap-num { color: var(--accent2); }
+  .ap-text { color: var(--text); word-break: break-word; }
+  .ap-text.empty { color: var(--muted); font-style: italic; }
+  .fmt-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+  }
+  .fmt-row:last-child { border-bottom: none; }
+  .fmt-label {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent);
+    width: 30px;
+    flex-shrink: 0;
+  }
+  .fmt-in {
+    background: var(--surface2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    padding: 8px 10px;
+    border-radius: 7px;
+    outline: none;
+    min-width: 0;
+  }
+  .fmt-in:focus { border-color: var(--accent); }
+  .fmt-in.tab { flex: 1; }
+  .fmt-in.range { width: 92px; flex-shrink: 0; }
+  .fmt-note {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    opacity: 0.7;
+    margin-top: 14px;
+    line-height: 1.6;
+  }
+  .ap-edit-btn {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 4px 6px;
+    border-radius: 6px;
+    font-size: 13px;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: background 0.12s;
+  }
+  .ap-edit-btn:hover { background: rgba(255,255,255,0.07); }
+  .ap-input {
+    flex: 1;
+    background: var(--surface2);
+    border: 1px solid var(--accent);
+    color: var(--text);
+    font-family: var(--font);
+    font-size: 13px;
+    padding: 5px 8px;
+    border-radius: 6px;
+    outline: none;
+    min-width: 0;
+  }
+  .edit-count {
+    font-size: 11px;
+    font-family: var(--mono);
+    color: var(--muted);
+    letter-spacing: 0.08em;
+    margin: 14px 0 6px;
+    opacity: 0.8;
+  }
 
   /* Add team modal */
   .add-input {
@@ -543,22 +808,28 @@
     <div class="app-title">Trivia Scorer</div>
     <div style="display:flex;gap:8px;align-items:center;">
       <button class="csv-upload-btn" onclick="openEditTeamsModal()">Edit Teams</button>
-      <button class="csv-upload-btn" onclick="document.getElementById('csvFileInput').click()">
-        <span id="csvStatus">Upload TSV</span>
-      </button>
+      <div class="menu-wrap">
+        <button class="menu-btn" id="menuBtn" onclick="toggleMenu(event)" aria-label="Menu">☰</button>
+        <div class="menu-dropdown" id="menuDropdown">
+          <button class="menu-item" onclick="closeMenu(); openSheetModal();"><span id="csvStatus">Load Answers</span></button>
+          <button class="menu-item" onclick="closeMenu(); openFormatModal();">Format Answers</button>
+          <button class="menu-item" onclick="closeMenu(); exportPDF();">Export PDF</button>
+          <button class="menu-item danger" onclick="closeMenu(); clearAllData();">Reset</button>
+        </div>
+      </div>
       <input type="file" id="csvFileInput" accept=".tsv,.txt,text/tab-separated-values" style="display:none"
         onchange="handleCSV(this.files[0]); this.value=''">
     </div>
   </div>
-  <select class="round-select" id="roundSelect" onchange="switchView(this.value)">
-    <option value="0">Round 1</option>
-    <option value="1">Round 2</option>
-    <option value="2">Round 3</option>
-    <option value="3">Round 4</option>
-    <option value="4">Round 5</option>
-    <option value="5">Round 6 (2x pts)</option>
-    <option value="6">Scoreboard</option>
-  </select>
+  <div class="round-tabs" id="roundTabs">
+    <button class="round-tab" onclick="switchView(0)">R1</button>
+    <button class="round-tab" onclick="switchView(1)">R2</button>
+    <button class="round-tab" onclick="switchView(2)">R3</button>
+    <button class="round-tab" onclick="switchView(3)">R4</button>
+    <button class="round-tab" onclick="switchView(4)">R5</button>
+    <button class="round-tab" onclick="switchView(5)">R6</button>
+    <button class="round-tab" onclick="switchView(6)">Scores</button>
+  </div>
 </div>
 
 <div id="mainContent"></div>
@@ -575,7 +846,8 @@
         <div class="kb-hint" style="margin-top:0;">
           <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
           <span><kbd>→</kbd> correct</span>
-          <span><kbd>←</kbd> undo</span>
+          <span><kbd>←</kbd> clear</span>
+          <span><kbd>2</kbd>=½ <kbd>3</kbd>=⅓…</span>
           <span><kbd>↵</kbd> done</span>
         </div>
         <div id="r6badge" style="display:none;font-size:11px;font-family:var(--mono);color:var(--accent2);white-space:nowrap;">★ 2× pts</div>
@@ -588,36 +860,56 @@
   </div>
 </div>
 
-<!-- Add team modal -->
-<div class="modal-overlay" id="addTeamModal">
-  <div class="modal">
-    <div class="modal-header">
-      <div class="modal-drag"></div>
-      <div class="modal-title">Add Team</div>
-      <div class="modal-subtitle">Press ENTER to submit. Click Finish when done.</div>
-    </div>
-    <div class="modal-body">
-      <input type="text" class="add-input" id="teamNameInput" placeholder="e.g. Quiz Khalifa" maxlength="40"
-        onkeydown="if(event.key==='Enter')confirmAddTeam()">
-    </div>
-    <div class="modal-footer">
-      <button class="btn-add-confirm" onclick="confirmAddTeam()">Add Team</button>
-      <button class="btn-cancel" onclick="closeAddModal()">Finish</button>
-    </div>
-  </div>
-</div>
-
 <!-- Edit teams modal -->
 <div class="modal-overlay" id="editTeamsModal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-drag"></div>
-      <div class="modal-title">Edit Teams</div>
-      <div class="modal-subtitle" id="editTeamsSubtitle"></div>
+      <div class="modal-title-row">
+        <div class="modal-title">Edit Teams</div>
+        <button class="modal-close-btn" onclick="closeEditTeamsModal()">Close</button>
+      </div>
+      <div class="modal-subtitle" style="margin-top:4px;">Type a name and press ENTER to add</div>
     </div>
     <div class="modal-body" id="editTeamsList"></div>
+  </div>
+</div>
+
+<!-- Load answers modal -->
+<div class="modal-overlay" id="sheetModal">
+  <div class="modal modal-tall">
+    <div class="modal-header">
+      <div class="modal-drag"></div>
+      <div class="modal-title-row">
+        <div class="modal-title">Load Answers</div>
+        <button class="modal-close-btn" onclick="closeSheetModal()">Close</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <input type="text" class="add-input" id="sheetUrlInput" autocomplete="off"
+        placeholder="Paste Google Sheet link here &amp; press Enter"
+        onkeydown="if(event.key==='Enter'){event.preventDefault();loadFromSheet();}">
+      <div id="sheetStatus" class="sheet-status"></div>
+      <button class="add-btn" style="margin-top:8px" onclick="document.getElementById('csvFileInput').click()">
+        Upload TSV file
+      </button>
+      <div id="answerPreview" class="answer-preview"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Format answers modal -->
+<div class="modal-overlay" id="formatModal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-drag"></div>
+      <div class="modal-title">Format Answers</div>
+      <div class="modal-subtitle">Which cells each round is read from</div>
+    </div>
+    <div class="modal-body" id="formatList"></div>
     <div class="modal-footer">
-      <button class="btn-done" onclick="closeEditTeamsModal()">Done</button>
+      <button class="btn-cancel" onclick="resetFormatCfg()">Reset to Default</button>
+      <button class="btn-add-confirm" onclick="closeFormatModal()">Done</button>
     </div>
   </div>
 </div>
@@ -641,6 +933,330 @@ let activeTeam = null;
 let activeRound = null;
 // Tracks teams marked as "navigated" per round even if 0 correct: key = "teamIdx:round"
 let navigatedSet = new Set();
+
+// ── Google Sheet answer source ────────────────────────────────────
+// Each round lives on its own tab with its own column/row range.
+// Round 6 reads 8 cells: 7 answers plus the bonus in the last row.
+const SHEET_CFG_DEFAULT = [
+  { tab: 'ROUND 1', range: 'C3:C9'  },
+  { tab: 'ROUND 2', range: 'C3:C9'  },
+  { tab: 'ROUND 3', range: 'B4:B10' },
+  { tab: 'ROUND 4', range: 'C3:C9'  },
+  { tab: 'ROUND 5', range: 'B3:B9'  },
+  { tab: 'ROUND 6', range: 'C3:C10' }
+];
+
+let SHEET_CFG = SHEET_CFG_DEFAULT.map(c => ({ ...c }));
+
+function loadSheetCfg() {
+  try {
+    const raw = localStorage.getItem('trivia_sheet_cfg');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length === ROUNDS) {
+        SHEET_CFG = parsed.map((c, i) => ({
+          tab: (c && c.tab) || SHEET_CFG_DEFAULT[i].tab,
+          range: (c && c.range) || SHEET_CFG_DEFAULT[i].range
+        }));
+      }
+    }
+  } catch(e) {}
+}
+
+function saveSheetCfg() {
+  try { localStorage.setItem('trivia_sheet_cfg', JSON.stringify(SHEET_CFG)); } catch(e) {}
+}
+loadSheetCfg();
+
+function extractSheetId(url) {
+  const m = url.match(/\/spreadsheets\/d\/([a-zA-Z0-9-_]+)/);
+  return m ? m[1] : null;
+}
+
+// Proper CSV parser (gviz returns quoted CSV)
+function parseCSVText(text) {
+  const rows = [];
+  let row = [], cur = '', inQ = false;
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i];
+    if (inQ) {
+      if (c === '"') {
+        if (text[i+1] === '"') { cur += '"'; i++; }
+        else inQ = false;
+      } else cur += c;
+    } else {
+      if (c === '"') inQ = true;
+      else if (c === ',') { row.push(cur); cur = ''; }
+      else if (c === '\n') { row.push(cur); rows.push(row); row = []; cur = ''; }
+      else if (c !== '\r') cur += c;
+    }
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  return rows;
+}
+
+function setSheetStatus(msg, cls) {
+  const el = document.getElementById('sheetStatus');
+  if (!el) return;
+  el.textContent = msg;
+  el.className = 'sheet-status' + (cls ? ' ' + cls : '');
+}
+
+// columns[r] = array of cell strings pulled from that round's tab
+function applySheetData(columns) {
+  let filled = 0;
+  const next = Array.from({length: ROUNDS}, (_, r) => {
+    const count = r === 5 ? 8 : ANSWERS_PER_ROUND;
+    const col = columns[r] || [];
+    return Array.from({length: count}, (_, q) => {
+      const cell = col[q] != null ? String(col[q]).trim() : '';
+      if (cell) filled++;
+      if (r === 5 && q === 7) return cell ? `Bonus: ${cell}` : 'Bonus';
+      return cell || `Answer ${q+1}`;
+    });
+  });
+  if (filled > 0) answerLabels = next;
+  return filled;
+}
+
+function markAnswersLoaded(sourceLabel) {
+  const el = document.getElementById('csvStatus');
+  const btn = document.querySelector('.csv-upload-btn');
+  if (el) el.textContent = `✓ ${sourceLabel}`;
+  if (btn) btn.classList.add('loaded');
+}
+
+// Google's gviz endpoint often refuses cross-origin browser requests
+// (always so from file:// pages). Try direct first, then read-only
+// CORS relays. Whichever transport works is reused for the other tabs.
+const RELAYS = [
+  { name: 'direct', build: u => u },
+  { name: 'allorigins', build: u => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u) },
+  { name: 'corsproxy', build: u => 'https://corsproxy.io/?url=' + encodeURIComponent(u) }
+];
+let workingRelay = null;   // index of the transport that succeeded
+
+function looksLikeHTML(text) {
+  return /^\s*</.test(text) || text.includes('google-visualization-api');
+}
+
+// Resolves to {text} or rejects with a reason string
+function fetchText(url) {
+  const order = workingRelay === null
+    ? RELAYS.map((_, i) => i)
+    : [workingRelay, ...RELAYS.map((_, i) => i).filter(i => i !== workingRelay)];
+
+  let lastReason = 'net';
+
+  return order.reduce((chain, idx) => chain.catch(() =>
+    fetch(RELAYS[idx].build(url))
+      .then(res => {
+        if (!res.ok) { lastReason = 'http' + res.status; throw new Error(lastReason); }
+        return res.text();
+      })
+      .then(text => {
+        if (looksLikeHTML(text)) { lastReason = 'private'; throw new Error(lastReason); }
+        workingRelay = idx;
+        return text;
+      })
+  ), Promise.reject(new Error('start')))
+  .catch(() => { throw new Error(lastReason); });
+}
+
+function fetchRoundColumn(id, cfg) {
+  const endpoint = `https://docs.google.com/spreadsheets/d/${id}/gviz/tq`
+    + `?tqx=out:csv&headers=0`
+    + `&sheet=${encodeURIComponent(cfg.tab)}`
+    + `&range=${cfg.range}`;
+
+  return fetchText(endpoint).then(text =>
+    parseCSVText(text).map(row => (row[0] != null ? row[0] : ''))
+  );
+}
+
+function loadFromSheet() {
+  const input = document.getElementById('sheetUrlInput');
+  const url = input.value.trim();
+  if (!url) { setSheetStatus('Paste a Google Sheet link first.', 'err'); return; }
+
+  const id = extractSheetId(url);
+  if (!id) { setSheetStatus("That doesn't look like a Google Sheets URL.", 'err'); return; }
+
+  workingRelay = null;
+  setSheetStatus('Loading 6 tabs…');
+
+  const reasons = [];
+  const jobs = SHEET_CFG.map(cfg =>
+    fetchRoundColumn(id, cfg)
+      .catch(err => { reasons.push({ tab: cfg.tab, why: err.message }); return null; })
+  );
+
+  Promise.all(jobs).then(columns => {
+    const failedTabs = [];
+    columns.forEach((c, i) => { if (c === null) failedTabs.push(SHEET_CFG[i].tab); });
+
+    // Nothing came back at all — explain the most likely cause
+    if (failedTabs.length === SHEET_CFG.length) {
+      const why = reasons[0] ? reasons[0].why : 'net';
+      if (why === 'private') {
+        setSheetStatus(
+          'Google returned a sign-in page. Set link sharing to '
+          + '"Anyone with the link — Viewer" (not "Restricted").', 'err');
+      } else if (why.startsWith('http')) {
+        setSheetStatus(
+          `Google rejected the request (${why}). Double-check the tab names `
+          + 'match exactly, including spaces and capitals.', 'err');
+      } else {
+        setSheetStatus(
+          'The browser blocked the connection. This happens when the page is '
+          + 'opened directly from a file, or when offline. Serve it over http:// '
+          + '(or use the TSV upload below).', 'err');
+      }
+      return;
+    }
+
+    const filled = applySheetData(columns.map(c => c || []));
+    if (filled === 0) {
+      setSheetStatus('Tabs loaded but every cell was empty — check the row ranges.', 'err');
+      return;
+    }
+
+    try { localStorage.setItem('trivia_sheet_url', url); } catch(e) {}
+
+    const via = workingRelay > 0 ? ` (via ${RELAYS[workingRelay].name} relay)` : '';
+    const msg = failedTabs.length
+      ? `Loaded ${filled} answers${via}. These tabs failed: ${failedTabs.join(', ')}`
+      : `✓ Loaded ${filled} answers from all 6 tabs${via}`;
+    setSheetStatus(msg, failedTabs.length ? 'err' : 'ok');
+    markAnswersLoaded('Sheet');
+    renderAnswerPreview();
+    saveState();
+    render();
+  });
+}
+
+// Detect whether any real answers have been loaded (vs. placeholders)
+function answersLoaded() {
+  return answerLabels.some((round, r) =>
+    round.some((a, q) => {
+      if (r === 5 && q === 7) return a !== 'Bonus';
+      return a !== `Answer ${q+1}`;
+    })
+  );
+}
+
+function renderAnswerPreview() {
+  const el = document.getElementById('answerPreview');
+  if (!el) return;
+  if (!answersLoaded()) { el.innerHTML = ''; return; }
+
+  let html = '';
+  for (let r = 0; r < ROUNDS; r++) {
+    html += `<div class="ap-round-title">${ROUND_NAMES[r]}</div>`;
+    const count = r === 5 ? 8 : ANSWERS_PER_ROUND;
+    for (let q = 0; q < count; q++) {
+      const isBonus = r === 5 && q === 7;
+      const label = answerLabels[r][q];
+      const placeholder = isBonus ? 'Bonus' : `Answer ${q+1}`;
+      const isEmpty = label === placeholder;
+      html += `<div class="ap-item${isBonus ? ' bonus' : ''}" id="ap-${r}-${q}">
+        <span class="ap-num">${isBonus ? '★' : (q+1) + '.'}</span>
+        <span class="ap-text${isEmpty ? ' empty' : ''}">${isEmpty ? '(empty)' : esc(label)}</span>
+        <button class="ap-edit-btn" title="Edit" onclick="startEditAnswer(${r},${q})">✎</button>
+      </div>`;
+    }
+  }
+  el.innerHTML = html;
+}
+
+function startEditAnswer(r, q) {
+  const row = document.getElementById(`ap-${r}-${q}`);
+  if (!row) return;
+  const isBonus = r === 5 && q === 7;
+  let current = answerLabels[r][q];
+  const placeholder = isBonus ? 'Bonus' : `Answer ${q+1}`;
+  // Strip the "Bonus: " prefix so the user edits just the answer text
+  if (isBonus && current.startsWith('Bonus: ')) current = current.slice(7);
+  if (current === placeholder) current = '';
+
+  row.innerHTML = `
+    <span class="ap-num">${isBonus ? '★' : (q+1) + '.'}</span>
+    <input class="ap-input" id="ap-input-${r}-${q}" value="${esc(current)}"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();saveEditAnswer(${r},${q});} if(event.key==='Escape')renderAnswerPreview();">
+    <button class="ap-edit-btn" title="Save" onclick="saveEditAnswer(${r},${q})">✓</button>`;
+  const input = document.getElementById(`ap-input-${r}-${q}`);
+  if (input) { input.focus(); input.select(); }
+}
+
+function saveEditAnswer(r, q) {
+  const input = document.getElementById(`ap-input-${r}-${q}`);
+  if (!input) return;
+  const isBonus = r === 5 && q === 7;
+  const placeholder = isBonus ? 'Bonus' : `Answer ${q+1}`;
+  const val = input.value.trim();
+  if (isBonus) {
+    answerLabels[r][q] = val ? `Bonus: ${val}` : 'Bonus';
+  } else {
+    answerLabels[r][q] = val || placeholder;
+  }
+  markAnswersLoaded('Edited');
+  saveState();
+  render();
+  renderAnswerPreview();
+}
+
+function openSheetModal() {
+  const input = document.getElementById('sheetUrlInput');
+  const saved = localStorage.getItem('trivia_sheet_url');
+  if (saved && !input.value) input.value = saved;
+  setSheetStatus('');
+  renderAnswerPreview();
+  document.getElementById('sheetModal').classList.add('open');
+  setTimeout(() => input.focus(), 250);
+}
+
+function closeSheetModal() {
+  document.getElementById('sheetModal').classList.remove('open');
+}
+
+// ── Format Answers (cell-range config) ──
+function openFormatModal() {
+  renderFormatList();
+  document.getElementById('formatModal').classList.add('open');
+}
+
+function closeFormatModal() {
+  document.getElementById('formatModal').classList.remove('open');
+}
+
+function renderFormatList() {
+  let html = '<div id="fmtStatus" class="sheet-status ok" style="margin-top:0"></div>';
+  for (let i = 0; i < ROUNDS; i++) {
+    html += `<div class="fmt-row">
+      <span class="fmt-label">R${i+1}</span>
+      <input class="fmt-in tab" value="${esc(SHEET_CFG[i].tab)}"
+        placeholder="Tab name" onchange="updateFmt(${i},'tab',this.value)">
+      <input class="fmt-in range" value="${esc(SHEET_CFG[i].range)}"
+        placeholder="C3:C9" onchange="updateFmt(${i},'range',this.value)">
+    </div>`;
+  }
+  html += `<div class="fmt-note">Each round reads a single column. Round 6 should span 8 cells — the last is the bonus. Changes are saved automatically and used on the next load.</div>`;
+  document.getElementById('formatList').innerHTML = html;
+}
+
+function updateFmt(i, key, val) {
+  SHEET_CFG[i][key] = val.trim();
+  saveSheetCfg();
+}
+
+function resetFormatCfg() {
+  if (!confirm('Reset all cell ranges to the original defaults?')) return;
+  SHEET_CFG = SHEET_CFG_DEFAULT.map(c => ({ ...c }));
+  saveSheetCfg();
+  renderFormatList();
+  const s = document.getElementById('fmtStatus');
+  if (s) { s.textContent = '✓ Restored default cell ranges'; }
+}
 
 function parseCSV(text) {
   // Split into lines, skip empty
@@ -670,12 +1286,13 @@ function handleCSV(file) {
   reader.onload = e => {
     try {
       answerLabels = parseCSV(e.target.result);
-      const btn = document.querySelector('.csv-upload-btn');
-      document.getElementById('csvStatus').textContent = '✓ TSV loaded';
-      btn.classList.add('loaded');
+      markAnswersLoaded('TSV');
+      setSheetStatus(`✓ Loaded from ${file.name}`, 'ok');
+      saveState();
       render();
+      renderAnswerPreview();
     } catch(err) {
-      document.getElementById('csvStatus').textContent = '✗ Error';
+      setSheetStatus('Could not read that file.', 'err');
     }
   };
   reader.readAsText(file);
@@ -691,9 +1308,28 @@ function initTeam(name) {
   };
 }
 
+// Answer values are stored as denominators: 0 = no credit, 1 = full point,
+// 2 = half point, 3 = third ... 9 = ninth. Value = 1/n.
+const FRAC_GLYPHS = {2:'½',3:'⅓',4:'¼',5:'⅕',6:'⅙',7:'⅐',8:'⅛',9:'⅑'};
+
+function answerValue(v) {
+  return v > 0 ? 1 / v : 0;
+}
+
 function getTeamRoundScore(team, round) {
   const pts = round === 5 ? 2 : 1;
-  return team.answers[round].filter(Boolean).length * pts;
+  return team.answers[round].reduce((sum, v) => sum + answerValue(v), 0) * pts;
+}
+
+// Format a score: trim to at most 2 decimals, no trailing zeros
+function fmtScore(n) {
+  const rounded = Math.round(n * 100) / 100;
+  return String(rounded);
+}
+
+// Rounded comparison key so fractional scores tie correctly (⅓+⅓+⅓ === 1)
+function scoreKey(n) {
+  return Math.round(n * 1000);
 }
 
 function getTeamTotal(team) {
@@ -704,8 +1340,8 @@ function getTeamTotal(team) {
 
 // Place of a team among all teams (1-based, tied teams share same place)
 function getTeamPlace(team) {
-  const myScore = getTeamTotal(team);
-  const higher = teams.filter(t => getTeamTotal(t) > myScore).length;
+  const myKey = scoreKey(getTeamTotal(team));
+  const higher = teams.filter(t => scoreKey(getTeamTotal(t)) > myKey).length;
   return higher + 1;
 }
 
@@ -723,9 +1359,79 @@ function getInitials(name) {
   return name.split(' ').map(w => w[0]).join('').slice(0,2).toUpperCase() || '?';
 }
 
+// Name used for alphabetizing — a leading "The" is ignored
+function sortName(name) {
+  return name.trim().replace(/^the\s+/i, '');
+}
+
+// Words kept lowercase unless they're the first or last word
+const SMALL_WORDS = new Set([
+  'a','an','and','as','at','but','by','for','from','if','in','into','nor',
+  'of','off','on','onto','or','over','per','so','the','to','up','via','vs',
+  'with','yet'
+]);
+
+function titleCase(input) {
+  const raw = input.trim().replace(/\s+/g, ' ');
+  if (!raw) return raw;
+
+  // If the whole thing is shouted, normalize first so it isn't left in caps.
+  // Otherwise leave existing ALL-CAPS words alone — they're likely acronyms.
+  const allCaps = raw === raw.toUpperCase() && /[A-Z]/.test(raw);
+  const words = (allCaps ? raw.toLowerCase() : raw).split(' ');
+
+  return words.map((word, i) => {
+    // Preserve acronyms the user typed intentionally (NFL, USA)
+    if (!allCaps && word.length > 1 && word === word.toUpperCase() && /[A-Z]/.test(word)) {
+      return word;
+    }
+    const bare = word.replace(/[^A-Za-z]/g, '').toLowerCase();
+    const isEdge = i === 0 || i === words.length - 1;
+    if (!isEdge && SMALL_WORDS.has(bare)) return word.toLowerCase();
+    // Capitalize across hyphens/slashes (small words inside stay lowercase),
+    // but never after an apostrophe (don't → Don't)
+    return word.toLowerCase().split(/([-\/])/).map((seg, si) => {
+      if (seg === '-' || seg === '/') return seg;
+      const segBare = seg.replace(/[^a-z]/g, '');
+      if (si > 0 && SMALL_WORDS.has(segBare)) return seg;
+      return seg.replace(/^([a-z])/, c => c.toUpperCase());
+    }).join('');
+  }).join(' ');
+}
+
+function sortLetter(name) {
+  const s = sortName(name);
+  return (s[0] || '?').toUpperCase();
+}
+
+function byName(a, b) {
+  return sortName(a.name).localeCompare(sortName(b.name));
+}
+
+function toggleMenu(e) {
+  if (e) e.stopPropagation();
+  document.getElementById('menuDropdown').classList.toggle('open');
+}
+
+function closeMenu() {
+  document.getElementById('menuDropdown').classList.remove('open');
+}
+
+// Close menu when clicking anywhere outside it
+document.addEventListener('click', function(e) {
+  const wrap = e.target.closest('.menu-wrap');
+  if (!wrap) closeMenu();
+});
+
 function switchView(v) {
   currentView = parseInt(v);
   render();
+  updateTabs();
+}
+
+function updateTabs() {
+  const tabs = document.querySelectorAll('#roundTabs .round-tab');
+  tabs.forEach((t, i) => t.classList.toggle('active', i === currentView));
 }
 
 function render() {
@@ -754,73 +1460,65 @@ function isTeamGraded(team, round) {
   return team.answers[round].some(Boolean) || navigatedSet.has(`${ti}:${round}`);
 }
 
+// Teams in current DOM order (used for type-ahead jumping)
+let currentListOrder = [];
+
+// Average round score across graded teams, shown in the header
+function roundAvgLabel(graded, r) {
+  if (graded.length === 0) return '';
+  const sum = graded.reduce((s, t) => s + getTeamRoundScore(t, r), 0);
+  const avg = sum / graded.length;
+  return `<span class="round-avg">avg ${fmtScore(avg)}</span>`;
+}
+
 function renderRound(r) {
   const isR6 = r === 5;
 
-  // Split into graded (have at least 1 correct) and ungraded
   const graded = teams.filter(t => isTeamGraded(t, r))
     .sort((a, b) => getTeamRoundScore(b, r) - getTeamRoundScore(a, r));
-  const ungraded = teams.filter(t => !isTeamGraded(t, r))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  const ungraded = teams.filter(t => !isTeamGraded(t, r)).sort(byName);
 
-  firstUngradedIdx = graded.length; // position of first ungraded in final list
-  const sorted = [...graded, ...ungraded];
+  // Only ungraded teams are keyboard-navigable
+  currentListOrder = [...ungraded];
+  firstUngradedIdx = 0;
 
   let html = `<div class="round-view">
     <div class="round-header">
-      <div class="round-label">${ROUND_NAMES[r]}${isR6 ? ' · 2 pts/answer' : ''}</div>
-      <div class="team-count">${teams.length} team${teams.length!==1?'s':''}</div>
+      <div class="round-label">${ROUND_NAMES[r]}${isR6 ? ' · 2 pts/answer' : ''}<span class="type-ahead" id="typeAhead" style="display:none"></span></div>
+      <div class="team-count">${roundAvgLabel(graded, r)}${teams.length} team${teams.length!==1?'s':''}</div>
     </div>`;
 
-  if (sorted.length === 0) {
+  if (teams.length === 0) {
     html += `<div class="empty-state">
-      <p>Version 0.009728</p>
+      <p>Version 1.1</p>
     </div>`;
   } else {
-    html += `<div class="team-list">`;
-    let lastLetter = '';
-    let inGraded = true;
-    for (let i = 0; i < sorted.length; i++) {
-      const team = sorted[i];
-      const ti = teams.indexOf(team);
-      const total = getTeamTotal(team);
-      const place = getTeamPlace(team);
-      const maxScore = maxScoreUpToRound(r);
-      const grading = isTeamGraded(team, r);
-
-      // Insert divider between graded and ungraded sections
-      if (inGraded && !grading && graded.length > 0 && ungraded.length > 0) {
-        html += `<div style="height:1px;background:rgba(255,255,255,0.07);margin:4px 0"></div>`;
-        inGraded = false;
-        lastLetter = ''; // reset letter tracking for ungraded section
+    // ── Ungraded: alphabetical grid ──
+    if (ungraded.length > 0) {
+      html += `<div class="team-list">`;
+      for (const team of ungraded) {
+        html += teamCardHTML(team, teams.indexOf(team), r);
       }
-      if (inGraded && !grading) inGraded = false;
-
-      const firstLetter = team.name.trim()[0].toUpperCase();
-      // Show avatar only for first of each letter in ungraded section; always show in graded
-      const showAvatar = grading ? true : (firstLetter !== lastLetter);
-      if (!grading) lastLetter = firstLetter;
-
-      const statLine = `${place} / ${teams.length} Place &nbsp;✦&nbsp; ${total} / ${maxScore} Points`;
-      html += `<div class="team-card" onclick="openAnswerModal(${ti},${r})">
-        <div class="team-avatar" style="${showAvatar ? '' : 'visibility:hidden'}">${firstLetter}</div>
-        <div class="team-info">
-          <div class="team-name">${esc(team.name)}</div>
-          <div class="team-pts">${statLine}</div>
-        </div>
-        <div class="team-round-score">${getTeamRoundScore(team, r)}</div>
-      </div>`;
+      html += `</div>`;
     }
-    html += `</div>`;
+
+    // ── Graded: single-column, highest score first ──
+    if (graded.length > 0) {
+      html += `<div class="section-label">GRADED · ${graded.length}</div>`;
+      html += `<div class="team-list-single">`;
+      for (const team of graded) {
+        html += teamCardHTML(team, teams.indexOf(team), r);
+      }
+      html += `</div>`;
+    }
   }
 
-  html += `<button class="add-btn" onclick="openAddModal()">
-    <span class="add-icon">+</span> Add Team
-  </button>`;
-
-  if (sorted.length > 0) {
+  if (teams.length > 0) {
     html += `<div class="kb-hint">
-      <span><kbd>↑</kbd><kbd>↓</kbd> navigate</span>
+      <span><kbd>↑</kbd><kbd>↓</kbd><kbd>←</kbd><kbd>→</kbd> navigate</span>
+      <span><kbd>A–Z</kbd> jump to team</span>
+      <span><kbd>[</kbd><kbd>]</kbd> switch round</span>
+      <span><kbd>=</kbd> edit teams</span>
       <span><kbd>↵</kbd> open team</span>
     </div>`;
   }
@@ -829,33 +1527,40 @@ function renderRound(r) {
   return html;
 }
 
+function teamCardHTML(team, ti, r) {
+  const total = getTeamTotal(team);
+  const place = getTeamPlace(team);
+  const maxScore = maxScoreUpToRound(r);
+  const statLine = `${place} / ${teams.length} Place &nbsp;✦&nbsp; ${fmtScore(total)} / ${maxScore} Points`;
+  return `<div class="team-card" onclick="openAnswerModal(${ti},${r})">
+    <div class="team-info">
+      <div class="team-name">${esc(team.name)}</div>
+      <div class="team-pts">${statLine}</div>
+    </div>
+    <div class="team-round-score">${fmtScore(getTeamRoundScore(team, r))}</div>
+  </div>`;
+}
+
 function renderScoreboard() {
   const sorted = [...teams].sort((a,b) => getTeamTotal(b) - getTeamTotal(a));
-  let html = `<div class="scoreboard">
-    <div class="sb-header">
-      <div class="round-label">Final Standings</div>
-      <div style="display:flex;gap:8px">
-        <button class="clear-btn" onclick="clearAllData()">Clear</button>
-        <button class="export-btn" onclick="exportPDF()">Export PDF</button>
-      </div>
-    </div>`;
+  let html = `<div class="scoreboard">`;
 
   if (sorted.length === 0) {
     html += `<div class="sb-empty">
       <p>No teams added yet.<br>Go to a round to add teams.</p>
     </div>`;
   } else {
-    // Group teams by score into consecutive tie-groups
+    // Group teams by score into consecutive tie-groups (rounded comparison)
     const groups = [];
     let i = 0, place = 1;
     while (i < sorted.length) {
-      const score = getTeamTotal(sorted[i]);
+      const key = scoreKey(getTeamTotal(sorted[i]));
       const group = [];
-      while (i < sorted.length && getTeamTotal(sorted[i]) === score) {
+      while (i < sorted.length && scoreKey(getTeamTotal(sorted[i])) === key) {
         group.push(sorted[i]);
         i++;
       }
-      groups.push({ place, score, teams: group });
+      groups.push({ place, score: getTeamTotal(group[0]), teams: group });
       place += group.length;
     }
 
@@ -870,13 +1575,13 @@ function renderScoreboard() {
         </div>
         <div class="${cardsClass}">`;
       for (const team of g.teams) {
-        const breakdown = ROUND_NAMES.map((n,r) => `R${r+1}:${getTeamRoundScore(team,r)}`).join(' ');
+        const breakdown = ROUND_NAMES.map((n,r) => `R${r+1}:${fmtScore(getTeamRoundScore(team,r))}`).join(' ');
         html += `<div class="sb-row">
           <div style="flex:1;min-width:0">
             <div class="sb-name">${esc(team.name)}</div>
             <div class="sb-breakdown">${breakdown}</div>
           </div>
-          <div class="sb-total">${g.score}</div>
+          <div class="sb-total">${fmtScore(g.score)}</div>
         </div>`;
       }
       html += `</div></div>`;
@@ -910,18 +1615,21 @@ function renderAnswerItems() {
   const maxScore = maxScoreUpToRound(activeRound);
 
   document.getElementById('scoreTally').innerHTML =
-    `${place} / ${teams.length} Place &nbsp;✦&nbsp; ${total} / ${maxScore} Points`;
+    `${place} / ${teams.length} Place &nbsp;✦&nbsp; ${fmtScore(total)} / ${maxScore} Points`;
 
   let html = '';
   const answerCount = isR6 ? 8 : ANSWERS_PER_ROUND;
   for (let i = 0; i < answerCount; i++) {
-    const isCorrect = team.answers[activeRound][i];
+    const v = team.answers[activeRound][i];
+    const hasCredit = v > 0;
+    const isPartial = v > 1;
     const label = answerLabels[activeRound][i] || (i === 7 ? 'Bonus' : `Answer ${i+1}`);
     const isBonus = activeRound === 5 && i === 7;
-    html += `<div class="answer-item${isCorrect?' correct':''}${isBonus?' bonus-item':''}" onclick="toggleAnswer(${i})">
+    const mark = !hasCredit ? '' : (isPartial ? (FRAC_GLYPHS[v] || `1/${v}`) : '✓');
+    html += `<div class="answer-item${hasCredit?' correct':''}${isBonus?' bonus-item':''}" onclick="toggleAnswer(${i})">
       <div class="answer-num">${isBonus ? '★' : String(i+1).padStart(2,'0')}</div>
       <div class="answer-text">${esc(label)}</div>
-      <div class="answer-check">${isCorrect?'✓':''}</div>
+      <div class="answer-check">${mark}</div>
     </div>`;
   }
   document.getElementById('modalAnswers').innerHTML = html;
@@ -934,7 +1642,15 @@ function renderAnswerItems() {
 
 function toggleAnswer(idx) {
   if (doneHighlighted) setDoneHighlight(false);
-  teams[activeTeam].answers[activeRound][idx] = !teams[activeTeam].answers[activeRound][idx];
+  // Tap toggles between no credit and full point
+  teams[activeTeam].answers[activeRound][idx] =
+    teams[activeTeam].answers[activeRound][idx] > 0 ? 0 : 1;
+  renderAnswerItems();
+}
+
+function setAnswerValue(idx, denom) {
+  if (doneHighlighted) setDoneHighlight(false);
+  teams[activeTeam].answers[activeRound][idx] = denom;
   renderAnswerItems();
 }
 
@@ -945,19 +1661,10 @@ function closeModal() {
   activeRound = null;
 }
 
-function openAddModal() {
-  document.getElementById('teamNameInput').value = '';
-  document.getElementById('addTeamModal').classList.add('open');
-  setTimeout(() => document.getElementById('teamNameInput').focus(), 300);
-}
-
-function closeAddModal() {
-  document.getElementById('addTeamModal').classList.remove('open');
-}
-
 function openEditTeamsModal() {
-  renderEditTeamsList();
   document.getElementById('editTeamsModal').classList.add('open');
+  renderEditTeamsList();
+  setTimeout(focusNewTeamInput, 250);
 }
 
 function closeEditTeamsModal() {
@@ -966,17 +1673,20 @@ function closeEditTeamsModal() {
 }
 
 function renderEditTeamsList() {
-  const sorted = [...teams].sort((a, b) => a.name.localeCompare(b.name));
-  document.getElementById('editTeamsSubtitle').textContent =
-    `${teams.length} team${teams.length !== 1 ? 's' : ''}`;
+  const sorted = [...teams].sort(byName);
+
+  let html = `<input type="text" class="add-input" id="newTeamInput"
+      placeholder="New team name…" autocomplete="off"
+      onkeydown="if(event.key==='Enter'){event.preventDefault();addTeamInline();}">
+    <div class="edit-count" id="editTeamsCount">${teams.length} team${teams.length !== 1 ? 's' : ''}</div>`;
 
   if (sorted.length === 0) {
-    document.getElementById('editTeamsList').innerHTML =
-      `<div style="text-align:center;padding:32px;color:var(--muted);font-size:15px;">No teams added yet.</div>`;
+    html += `<div style="text-align:center;padding:24px;color:var(--muted);font-size:15px;">No teams added yet.</div>`;
+    document.getElementById('editTeamsList').innerHTML = html;
+    focusNewTeamInput();
     return;
   }
 
-  let html = '';
   for (const team of sorted) {
     const ti = teams.indexOf(team);
     html += `<div class="edit-team-row" id="edit-row-${ti}">
@@ -986,6 +1696,27 @@ function renderEditTeamsList() {
     </div>`;
   }
   document.getElementById('editTeamsList').innerHTML = html;
+  focusNewTeamInput();
+}
+
+function focusNewTeamInput() {
+  const el = document.getElementById('newTeamInput');
+  if (el) el.focus();
+}
+
+function addTeamInline() {
+  const input = document.getElementById('newTeamInput');
+  if (!input) return;
+  const name = titleCase(input.value);
+  if (!name) return;
+  if (teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
+    input.style.borderColor = '#ff6b6b';
+    setTimeout(() => input.style.borderColor = '', 1000);
+    return;
+  }
+  teams.push(initTeam(name));
+  saveState();
+  renderEditTeamsList();   // re-renders with empty input, refocused
 }
 
 function startEditTeam(ti) {
@@ -993,7 +1724,7 @@ function startEditTeam(ti) {
   if (!row) return;
   const currentName = teams[ti].name;
   row.innerHTML = `
-    <input class="edit-team-input" id="edit-input-${ti}" value="${esc(currentName)}" maxlength="40"
+    <input class="edit-team-input" id="edit-input-${ti}" value="${esc(currentName)}"
       onkeydown="if(event.key==='Enter')confirmEditTeam(${ti}); if(event.key==='Escape')cancelEditTeam(${ti}, '${esc(currentName).replace(/'/g,"\\'")}')" />
     <button class="icon-btn edit" title="Save" onclick="confirmEditTeam(${ti})">✓</button>
     <button class="icon-btn delete" title="Cancel" onclick="cancelEditTeam(${ti}, '${esc(currentName).replace(/'/g,"\\'")}')" style="color:var(--muted)">✕</button>
@@ -1037,32 +1768,55 @@ function deleteTeam(ti) {
   renderEditTeamsList();
 }
 
-function confirmAddTeam() {
-  const input = document.getElementById('teamNameInput');
-  const name = input.value.trim();
-  if (!name) return;
-  if (teams.some(t => t.name.toLowerCase() === name.toLowerCase())) {
-    input.style.borderColor = '#ff6b6b';
-    setTimeout(() => input.style.borderColor = '', 1000);
-    return;
-  }
-  teams.push(initTeam(name));
-  render();
-  // Stay open — clear and re-focus for next team
-  input.value = '';
-  input.focus();
-}
-
 function esc(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+// Compute total content height so the PDF can be one continuous page
+function measurePDFHeight() {
+  let h = 52;                      // header block + start offset
+  h += 8;                          // "Final Standings" title
+  h += 10;                         // standings table header
+  h += 9 * teams.length;           // standings rows
+  h += 8;                          // gap
+
+  // Round answer summary
+  for (let r = 0; r < ROUNDS; r++) {
+    const aCount = r === 5 ? 8 : ANSWERS_PER_ROUND;
+    h += 12;                       // section header
+    h += 10;                       // column headers + rule
+    h += 8 * aCount;               // answer rows
+    h += 6;                        // gap
+  }
+  h += 4;
+
+  // Per-round team detail
+  for (let r = 0; r < ROUNDS; r++) {
+    const aCount = r === 5 ? 8 : ANSWERS_PER_ROUND;
+    h += 14;                       // round header
+    h += teams.length * (5 + 6 * aCount + 4);
+    h += 6;                        // gap
+  }
+
+  h += 20;                         // bottom padding
+  return h;
+}
+
 function exportPDF() {
   const { jsPDF } = window.jspdf;
-  const doc = new jsPDF({ unit: 'mm', format: 'a4' });
-  const sorted = [...teams].sort((a,b) => getTeamTotal(b) - getTeamTotal(a));
   const W = 210, margin = 18;
+  const MAX_MM = 5000;               // PDF spec caps pages at ~5080mm
+  const contentH = measurePDFHeight();
+  const H = Math.min(contentH, MAX_MM);
+  const doc = new jsPDF({ unit: 'mm', format: [W, H] });
+  const sorted = [...teams].sort((a,b) => getTeamTotal(b) - getTeamTotal(a));
   let y = 20;
+
+  // Only used if the roster is large enough to exceed one max-size page
+  const needsBreaks = contentH > MAX_MM;
+  function brk(space) {
+    if (needsBreaks && y + space > H - 12) { doc.addPage([W, H]); y = 20; }
+  }
 
   // Header
   doc.setFillColor(15,14,23);
@@ -1120,22 +1874,20 @@ function exportPDF() {
       const x = margin+78 + r*12;
       if (s > 0) { doc.setTextColor(15,120,80); doc.setFont('helvetica','bold'); }
       else { doc.setTextColor(150,150,160); doc.setFont('helvetica','normal'); }
-      doc.text(`${s}`, x, y+1.5);
+      doc.text(`${fmtScore(s)}`, x, y+1.5);
     }
     doc.setFont('helvetica','bold');
     doc.setTextColor(15,14,23);
-    doc.text(`${total}`, margin+152, y+1.5);
+    doc.text(`${fmtScore(total)}`, margin+152, y+1.5);
     y += 9;
-
-    if (y > 270) { doc.addPage(); y = 20; }
   }
 
   y += 8;
 
   // ── Round Answer Summary ──────────────────────────────────────────
   for (let r = 0; r < ROUNDS; r++) {
-    if (y > 240) { doc.addPage(); y = 20; }
-
+    const aCountS = r === 5 ? 8 : ANSWERS_PER_ROUND;
+    brk(12 + 10 + 8 * aCountS + 6);
     // Section header
     doc.setFillColor(232,197,71);
     doc.rect(margin, y, W-margin*2, 9, 'F');
@@ -1183,17 +1935,14 @@ function exportPDF() {
       doc.text(countStr + pctStr, W-margin-2, y, {align:'right'});
 
       y += 8;
-      if (y > 272) { doc.addPage(); y = 20; }
     }
     y += 6;
   }
 
   y += 4;
 
-  // Per-round detail pages
+  // Per-round detail sections
   for (let r = 0; r < ROUNDS; r++) {
-    if (y > 240) { doc.addPage(); y = 20; }
-
     doc.setFillColor(232,197,71);
     doc.rect(margin, y, W-margin*2, 10, 'F');
     doc.setFontSize(11);
@@ -1203,8 +1952,9 @@ function exportPDF() {
     doc.text(`${ROUND_NAMES[r]}  ·  ${pts}`, margin+3, y+7);
     y += 14;
 
-    const roundTeams = [...teams].sort((a,b) => a.name.localeCompare(b.name));
+    const roundTeams = [...teams].sort(byName);
     for (const team of roundTeams) {
+      brk(5 + 6 * (r === 5 ? 8 : ANSWERS_PER_ROUND) + 4);
       const score = getTeamRoundScore(team, r);
       doc.setFontSize(9);
       doc.setFont('helvetica','bold');
@@ -1212,21 +1962,23 @@ function exportPDF() {
       doc.text(team.name.slice(0,28), margin+2, y);
       doc.setFont('helvetica','normal');
       doc.setTextColor(r===5?160:60, r===5?80:140, 30);
-      doc.text(`${score}pt${score!==1?'s':''}`, W-margin-2, y, {align:'right'});
+      doc.text(`${fmtScore(score)}pt${score!==1?'s':''}`, W-margin-2, y, {align:'right'});
       y += 5;
 
       // Answer rows: label + tick
       const aCount = r === 5 ? 8 : ANSWERS_PER_ROUND;
       for (let a = 0; a < aCount; a++) {
-        const isCorrect = team.answers[r][a];
+        const v = team.answers[r][a];
+        const isCorrect = v > 0;
+        const isPartial = v > 1;
         const label = answerLabels[r][a] || (a === 7 ? 'Bonus' : `Answer ${a+1}`);
         if (isCorrect) {
-          doc.setFillColor(74,222,128);
+          doc.setFillColor(isPartial ? 232 : 74, isPartial ? 197 : 222, isPartial ? 71 : 128);
           doc.circle(margin+5, y-1.5, 2, 'F');
           doc.setTextColor(255,255,255);
           doc.setFontSize(6);
           doc.setFont('helvetica','bold');
-          doc.text('✓', margin+3.8, y-0.7);
+          doc.text(isPartial ? String(v) : '✓', margin+3.8, y-0.7);
         } else {
           doc.setDrawColor(200,200,210);
           doc.setFillColor(245,245,248);
@@ -1235,12 +1987,11 @@ function exportPDF() {
         doc.setFontSize(8);
         doc.setFont('helvetica', isCorrect ? 'bold' : 'normal');
         doc.setTextColor(isCorrect ? 30 : 120, isCorrect ? 120 : 120, isCorrect ? 50 : 130);
-        doc.text(`${a+1}. ${label.slice(0,55)}`, margin+10, y-0.5);
+        const fracNote = isPartial ? `  (1/${v} pt)` : '';
+        doc.text(`${a+1}. ${label.slice(0,50)}${fracNote}`, margin+10, y-0.5);
         y += 6;
-        if (y > 272) { doc.addPage(); y = 20; }
       }
       y += 4;
-      if (y > 272) { doc.addPage(); y = 20; }
     }
     y += 6;
   }
@@ -1256,11 +2007,14 @@ function exportPDF() {
 document.getElementById('answerModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
-document.getElementById('addTeamModal').addEventListener('click', function(e) {
-  if (e.target === this) closeAddModal();
-});
 document.getElementById('editTeamsModal').addEventListener('click', function(e) {
   if (e.target === this) closeEditTeamsModal();
+});
+document.getElementById('sheetModal').addEventListener('click', function(e) {
+  if (e.target === this) closeSheetModal();
+});
+document.getElementById('formatModal').addEventListener('click', function(e) {
+  if (e.target === this) closeFormatModal();
 });
 
 // Keyboard navigation state
@@ -1268,7 +2022,8 @@ let kbTeamIdx = -1;   // highlighted team index in the sorted round list
 let kbAnswerIdx = -1; // highlighted answer index in the answer modal
 
 function getTeamCards() {
-  return Array.from(document.querySelectorAll('.team-card'));
+  // Only the ungraded grid is keyboard-navigable; graded cards stay click-only
+  return Array.from(document.querySelectorAll('.team-list .team-card'));
 }
 
 function setTeamFocus(idx) {
@@ -1282,6 +2037,89 @@ function setTeamFocus(idx) {
 function clearTeamFocus() {
   getTeamCards().forEach(c => c.classList.remove('kb-focus'));
   kbTeamIdx = -1;
+}
+
+// Group card indices into visual rows using their vertical offset.
+// Geometry-based so the graded/ungraded divider can't skew the math.
+function getGridRows() {
+  const cards = getTeamCards();
+  const rows = [];
+  let cur = null, curTop = null;
+  cards.forEach((c, i) => {
+    const top = c.offsetTop;
+    if (curTop === null || Math.abs(top - curTop) > 2) {
+      cur = [];
+      rows.push(cur);
+      curTop = top;
+    }
+    cur.push(i);
+  });
+  return rows;
+}
+
+// Move focus around the grid, wrapping on every edge
+// ── Type-ahead: jump to first team matching typed letters ──
+let typeBuffer = '';
+let typeTimer = null;
+
+function showTypeBadge() {
+  const el = document.getElementById('typeAhead');
+  if (!el) return;
+  if (typeBuffer) {
+    el.textContent = typeBuffer.toUpperCase();
+    el.style.display = '';
+  } else {
+    el.style.display = 'none';
+  }
+}
+
+function typeAheadJump(ch) {
+  clearTimeout(typeTimer);
+  typeBuffer += ch.toLowerCase();
+  typeTimer = setTimeout(() => { typeBuffer = ''; showTypeBadge(); }, 3000);
+
+  const idx = currentListOrder.findIndex(t =>
+    sortName(t.name).toLowerCase().startsWith(typeBuffer)
+  );
+
+  if (idx !== -1) {
+    setTeamFocus(idx);
+  } else {
+    // No match for the extended buffer — fall back to just this letter
+    typeBuffer = ch.toLowerCase();
+    const single = currentListOrder.findIndex(t =>
+      sortName(t.name).toLowerCase().startsWith(typeBuffer)
+    );
+    if (single !== -1) setTeamFocus(single);
+  }
+  showTypeBadge();
+}
+
+function moveTeamFocus(dir) {
+  const cards = getTeamCards();
+  if (cards.length === 0) return;
+  if (kbTeamIdx < 0) { setTeamFocus(0); return; }
+
+  const rows = getGridRows();
+  let rI = 0, pI = 0;
+  for (let i = 0; i < rows.length; i++) {
+    const p = rows[i].indexOf(kbTeamIdx);
+    if (p !== -1) { rI = i; pI = p; break; }
+  }
+
+  if (dir === 'left') {
+    pI = pI - 1 < 0 ? rows[rI].length - 1 : pI - 1;
+  } else if (dir === 'right') {
+    pI = pI + 1 >= rows[rI].length ? 0 : pI + 1;
+  } else if (dir === 'up') {
+    rI = rI - 1 < 0 ? rows.length - 1 : rI - 1;
+    pI = Math.min(pI, rows[rI].length - 1);
+  } else if (dir === 'down') {
+    rI = rI + 1 >= rows.length ? 0 : rI + 1;
+    pI = Math.min(pI, rows[rI].length - 1);
+  }
+
+  setTeamFocus(rows[rI][pI]);
 }
 
 function getAnswerItems() {
@@ -1315,12 +2153,24 @@ function isAnswerModalOpen() {
 }
 
 function isAddModalOpen() {
-  return document.getElementById('addTeamModal').classList.contains('open');
+  // Team adding now lives inside the Edit Teams sheet
+  return document.getElementById('editTeamsModal').classList.contains('open');
 }
 
 document.addEventListener('keydown', function(e) {
-  // Never intercept while typing in add-team input
-  if (document.activeElement === document.getElementById('teamNameInput')) return;
+  // Never intercept while typing in any text field
+  const ae = document.activeElement;
+  if (ae && (ae.tagName === 'INPUT' || ae.tagName === 'TEXTAREA')) return;
+  // Ignore shortcuts while the Edit Teams or Load Answers sheets are open
+  if (document.getElementById('editTeamsModal').classList.contains('open')) return;
+  if (document.getElementById('sheetModal').classList.contains('open')) {
+    if (e.key === 'Escape') closeSheetModal();
+    return;
+  }
+  if (document.getElementById('formatModal').classList.contains('open')) {
+    if (e.key === 'Escape') closeFormatModal();
+    return;
+  }
 
   // --- Answer modal open ---
   if (isAnswerModalOpen()) {
@@ -1349,24 +2199,39 @@ document.addEventListener('keydown', function(e) {
     } else if (e.key === 'ArrowRight') {
       e.preventDefault();
       if (kbAnswerIdx < 0) { setAnswerFocus(0); return; }
-      // Mark current correct if not already
+      // Mark current full point if not already credited
       if (!teams[activeTeam].answers[activeRound][kbAnswerIdx]) {
-        teams[activeTeam].answers[activeRound][kbAnswerIdx] = true;
+        teams[activeTeam].answers[activeRound][kbAnswerIdx] = 1;
         renderAnswerItems();
       }
       // Advance to next
       const items = getAnswerItems();
       if (kbAnswerIdx < items.length - 1) setAnswerFocus(kbAnswerIdx + 1);
-      else setAnswerFocus(kbAnswerIdx); // re-apply highlight after re-render
+      else setAnswerFocus(kbAnswerIdx);
     } else if (e.key === 'ArrowLeft') {
       e.preventDefault();
       if (kbAnswerIdx < 0) { setAnswerFocus(0); return; }
-      // Unmark if currently correct
+      // Clear any credit on current answer
       if (teams[activeTeam].answers[activeRound][kbAnswerIdx]) {
-        teams[activeTeam].answers[activeRound][kbAnswerIdx] = false;
+        teams[activeTeam].answers[activeRound][kbAnswerIdx] = 0;
         renderAnswerItems();
         setAnswerFocus(kbAnswerIdx);
       }
+    } else if (/^[1-9]$/.test(e.key)) {
+      // Number keys: 1 = full point, 2 = half, 3 = third ... 9 = ninth
+      e.preventDefault();
+      if (kbAnswerIdx < 0) { setAnswerFocus(0); return; }
+      const denom = parseInt(e.key);
+      teams[activeTeam].answers[activeRound][kbAnswerIdx] = denom;
+      renderAnswerItems();
+      setAnswerFocus(kbAnswerIdx);
+    } else if (e.key === '0') {
+      // 0 clears credit
+      e.preventDefault();
+      if (kbAnswerIdx < 0) return;
+      teams[activeTeam].answers[activeRound][kbAnswerIdx] = 0;
+      renderAnswerItems();
+      setAnswerFocus(kbAnswerIdx);
     } else if (e.key === 'Escape' || e.key === 'Enter') {
       e.preventDefault();
       closeModal();
@@ -1374,14 +2239,42 @@ document.addEventListener('keydown', function(e) {
     return;
   }
 
+  // --- Global: [ and ] cycle views, = opens Edit Teams ---
+  if (!isAddModalOpen()) {
+    if (e.key === '[') {
+      e.preventDefault();
+      switchView((currentView - 1 + 7) % 7);
+      return;
+    }
+    if (e.key === ']') {
+      e.preventDefault();
+      switchView((currentView + 1) % 7);
+      return;
+    }
+    if (e.key === '=' || e.key === '+') {
+      e.preventDefault();
+      openEditTeamsModal();
+      return;
+    }
+  }
+
   // --- Round list view (no modal open) ---
   if (currentView < 6 && !isAddModalOpen()) {
     if (e.key === 'ArrowDown') {
       e.preventDefault();
-      setTeamFocus(kbTeamIdx < 0 ? 0 : kbTeamIdx + 1);
+      moveTeamFocus('down');
     } else if (e.key === 'ArrowUp') {
       e.preventDefault();
-      setTeamFocus(kbTeamIdx <= 0 ? 0 : kbTeamIdx - 1);
+      moveTeamFocus('up');
+    } else if (e.key === 'ArrowLeft') {
+      e.preventDefault();
+      moveTeamFocus('left');
+    } else if (e.key === 'ArrowRight') {
+      e.preventDefault();
+      moveTeamFocus('right');
+    } else if (/^[a-zA-Z0-9]$/.test(e.key) && !e.ctrlKey && !e.metaKey && !e.altKey) {
+      e.preventDefault();
+      typeAheadJump(e.key);
     } else if (e.key === 'Enter') {
       e.preventDefault();
       if (kbTeamIdx >= 0) {
@@ -1390,7 +2283,10 @@ document.addEventListener('keydown', function(e) {
       }
     } else if (e.key === 'Escape') {
       clearTeamFocus();
+      typeBuffer = '';
+      showTypeBadge();
     }
+    return;
   }
 });
 
@@ -1405,12 +2301,6 @@ closeModal = function() {
   doneHighlighted = false;
   kbAnswerIdx = -1;
   origCloseModal();
-};
-
-const origOpenAddModal = openAddModal;
-openAddModal = function() {
-  clearTeamFocus();
-  origOpenAddModal();
 };
 
 // Reset team focus on view switch
@@ -1445,20 +2335,25 @@ function loadState() {
         if (t.answers && t.answers[5] && t.answers[5].length === 7) {
           t.answers[5] = [...t.answers[5], false];
         }
+        // Migrate boolean answer values to numeric denominators (true=1, false=0)
+        if (t.answers) {
+          t.answers = t.answers.map(round =>
+            round.map(v => v === true ? 1 : v === false ? 0 : v)
+          );
+        }
         return t;
       });
     }
     if (Array.isArray(data.answerLabels)) {
       answerLabels = data.answerLabels;
       if (answerLabels.some(r => r.some(a => !a.startsWith('Answer ')))) {
-        document.getElementById('csvStatus').textContent = '✓ TSV restored';
+        document.getElementById('csvStatus').textContent = '✓ Answers';
         document.querySelector('.csv-upload-btn').classList.add('loaded');
       }
     }
     if (Array.isArray(data.navigated)) navigatedSet = new Set(data.navigated);
     if (typeof data.currentView === 'number') {
       currentView = data.currentView;
-      document.getElementById('roundSelect').value = currentView;
     }
   } catch(e) { /* corrupt data, start fresh */ }
 }
@@ -1475,19 +2370,25 @@ function clearAllData() {
   if (!confirm('Clear all teams and scores? This cannot be undone.')) return;
   teams = [];
   navigatedSet = new Set();
-  answerLabels = Array.from({length: ROUNDS}, (_, r) =>
-    Array.from({length: ANSWERS_PER_ROUND}, (_, q) => `Answer ${q+1}`)
-  );
+  answerLabels = Array.from({length: ROUNDS}, (_, r) => {
+    const count = r === 5 ? 8 : ANSWERS_PER_ROUND;
+    return Array.from({length: count}, (_, q) => q === 7 ? 'Bonus' : `Answer ${q+1}`);
+  });
   currentView = 0;
-  document.getElementById('roundSelect').value = 0;
-  document.getElementById('csvStatus').textContent = 'Upload TSV';
+  updateTabs();
+  document.getElementById('csvStatus').textContent = 'Load Answers';
   document.querySelector('.csv-upload-btn').classList.remove('loaded');
+  // Reset the Google Sheet link so the box shows its placeholder again
+  const urlInput = document.getElementById('sheetUrlInput');
+  if (urlInput) urlInput.value = '';
   try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+  try { localStorage.removeItem('trivia_sheet_url'); } catch(e) {}
   render();
 }
 
 // Initial load
 loadState();
+updateTabs();
 render();
 </script>
 </body>
